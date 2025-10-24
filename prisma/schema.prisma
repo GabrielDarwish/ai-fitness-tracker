@@ -1,0 +1,245 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// NextAuth.js Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile & Body Info
+  age           Int?
+  height        Float?    // Height in cm or inches
+  weight        Float?    // Current weight in kg or lbs
+  
+  // Preferences
+  goals         String?   // Fitness goals (weight loss, muscle gain, endurance, etc.)
+  equipment     String[]  // List of available equipment
+  dietaryInfo   String?   // Dietary preferences, restrictions, allergies
+
+  // NextAuth relations
+  accounts      Account[]
+  sessions      Session[]
+
+  // Fitness tracking relations
+  savedExercises   SavedExercise[]
+  workoutTemplates WorkoutTemplate[]
+  workoutLogs      WorkoutLog[]
+  progressLogs     ProgressLog[]
+  nutritionLogs    NutritionLog[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ========================================
+// EXERCISE MODELS
+// ========================================
+
+model Exercise {
+  id           String   @id @default(cuid())
+  apiId        String?  @unique // External API ID (e.g., ExerciseDB)
+  name         String
+  gifUrl       String?
+  bodyPart     String   // chest, back, legs, shoulders, arms, core, etc.
+  equipment    String   // barbell, dumbbell, bodyweight, machine, etc.
+  target       String   // specific muscle targeted
+  instructions String?  @db.Text // Instruction text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  savedBy          SavedExercise[]
+  templateExercises TemplateExercise[]
+  loggedExercises   LoggedExercise[]
+
+  @@index([bodyPart])
+  @@index([equipment])
+  @@index([target])
+  @@index([apiId])
+}
+
+model SavedExercise {
+  id         String   @id @default(cuid())
+  userId     String
+  exerciseId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
+  @@index([exerciseId])
+}
+
+// ========================================
+// WORKOUT TEMPLATE MODELS
+// ========================================
+
+model WorkoutTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?  @db.Text
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises TemplateExercise[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model TemplateExercise {
+  id         String @id @default(cuid())
+  templateId String
+  exerciseId String
+  sets       Int
+  reps       Int
+  restTime   Int    // Rest time in seconds between sets
+
+  template WorkoutTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exercise Exercise        @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@index([exerciseId])
+}
+
+// ========================================
+// WORKOUT LOG MODELS
+// ========================================
+
+model WorkoutLog {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime @default(now())
+  duration  Int?     // Total workout duration in minutes
+  notes     String?  @db.Text
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises LoggedExercise[]
+
+  @@index([userId])
+  @@index([date])
+}
+
+model LoggedExercise {
+  id           String @id @default(cuid())
+  workoutLogId String
+  exerciseId   String
+
+  workoutLog WorkoutLog @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id])
+  sets       LoggedSet[]
+
+  @@index([workoutLogId])
+  @@index([exerciseId])
+}
+
+model LoggedSet {
+  id               String @id @default(cuid())
+  loggedExerciseId String
+  weight           Float? // Weight used (in kg or lbs)
+  reps             Int    // Actual reps completed
+  restTime         Int?   // Rest time taken in seconds
+
+  loggedExercise LoggedExercise @relation(fields: [loggedExerciseId], references: [id], onDelete: Cascade)
+
+  @@index([loggedExerciseId])
+}
+
+// ========================================
+// PROGRESS TRACKING MODELS
+// ========================================
+
+model ProgressLog {
+  id       String   @id @default(cuid())
+  userId   String
+  date     DateTime @default(now())
+  weight   Float?   // Weight in kg or lbs
+  
+  // Body measurements (in cm or inches)
+  chest    Float?
+  waist    Float?
+  arms     Float?
+  thighs   Float?
+  
+  // Progress photo
+  imageUrl String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+}
+
+// ========================================
+// NUTRITION TRACKING MODELS
+// ========================================
+
+model NutritionLog {
+  id       String   @id @default(cuid())
+  userId   String
+  date     DateTime @default(now())
+  calories Int
+  protein  Float    // in grams
+  carbs    Float    // in grams
+  fat      Float    // in grams
+  note     String?  @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+}

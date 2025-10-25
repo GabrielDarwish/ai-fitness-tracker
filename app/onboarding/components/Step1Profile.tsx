@@ -39,7 +39,7 @@ export default function Step1Profile({
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: error.errors[0].message }));
+        setErrors((prev) => ({ ...prev, [field]: error.issues[0].message }));
       }
     }
   };

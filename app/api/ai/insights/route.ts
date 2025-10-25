@@ -1,6 +1,6 @@
 /**
  * AI Insights API Route
- * POST /api/ai/insights - Generate AI insights based on recent activity
+ * POST /api/ai/insights - Generate AI insights based on real user data
  */
 
 import { NextResponse } from "next/server";
@@ -11,8 +11,11 @@ import { asyncHandler, createSuccessResponse } from "@/lib/utils/errors";
 export const POST = asyncHandler(async () => {
   const user = await getCurrentUserProfile();
 
-  // Generate insights
-  const insights = await aiService.generateInsights(user.goals || undefined);
+  // Generate data-driven insights
+  const insights = await aiService.generatePersonalizedInsights(
+    user.id,
+    user.goals || undefined
+  );
 
   return createSuccessResponse(
     {

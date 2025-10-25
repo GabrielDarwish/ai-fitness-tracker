@@ -159,12 +159,14 @@ export const API_ENDPOINTS = {
 
 /**
  * Query Keys for React Query
+ * Centralized query keys for consistent caching
  */
 export const QUERY_KEYS = {
   // Exercises
   EXERCISES: (params?: Record<string, unknown>) => ["exercises", params],
   EXERCISE: (id: string) => ["exercise", id],
   SAVED_EXERCISES: ["saved-exercises"],
+  EXERCISE_SYNC: ["exercise-sync-status"],
 
   // Workouts
   WORKOUT_TEMPLATES: ["workout-templates"],
@@ -179,6 +181,15 @@ export const QUERY_KEYS = {
 
   // User
   USER: ["user"],
+  USER_PROFILE: ["user-profile"],
+  
+  // AI
+  AI_INSIGHTS: ["ai-insights"],
+  AI_PROGRESS_INSIGHTS: ["ai-progress-insights"],
+  AI_FORM_TIPS: (exerciseId: string) => ["ai-form-tips", exerciseId],
+  
+  // Dashboard
+  DASHBOARD: ["dashboard"],
 } as const;
 
 /**

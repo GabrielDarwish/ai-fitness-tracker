@@ -32,8 +32,8 @@ export const POST = asyncHandler(async (req: Request) => {
   }
 
   // Simple form tips generation
-  const prompt = `Provide 3-4 brief form tips for ${body.exerciseName}. Focus on proper technique and safety.`;
-  const tips = await aiService.generateInsights(prompt);
+  const prompt = `Provide 3-4 brief form tips for ${body.exerciseName}. Focus on proper technique and safety. Format as a numbered list (1., 2., 3.) with key points in bold using **text**.`;
+  const tips = await aiService.generateText(prompt);
 
   return createSuccessResponse(
     {

@@ -61,11 +61,11 @@ export default function AIWorkoutBuilderPage() {
 
   // Auto-fill form when user data loads
   useEffect(() => {
-    if (userData) {
+    if (userData?.user) {
       setFormData(prev => ({
         ...prev,
-        goal: userData.goals || "",
-        equipment: userData.equipment || [],
+        goal: userData.user.goals || "",
+        equipment: userData.user.equipment || [],
       }));
     }
   }, [userData]);
@@ -110,13 +110,21 @@ export default function AIWorkoutBuilderPage() {
     mutationFn: async () => {
       if (!generatedWorkout) throw new Error("No workout to save");
 
+      // Filter out 'name' and 'notes' fields from exercises (not in TemplateExercise schema)
+      const exercisesForTemplate = generatedWorkout.exercises.map(ex => ({
+        exerciseId: ex.exerciseId,
+        sets: ex.sets,
+        reps: ex.reps,
+        restTime: ex.restTime,
+      }));
+
       const res = await fetch("/api/workout-templates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: generatedWorkout.name,
           description: generatedWorkout.description,
-          exercises: generatedWorkout.exercises,
+          exercises: exercisesForTemplate,
         }),
       });
 
@@ -248,9 +256,9 @@ export default function AIWorkoutBuilderPage() {
                     Available Equipment ({formData.equipment.length} selected)
                   </label>
                   <div className="max-h-40 overflow-y-auto rounded-lg border border-slate-200 p-3">
-                    {userData?.equipment && userData.equipment.length > 0 ? (
+                    {userData?.user?.equipment && userData.user.equipment.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {userData.equipment.map((eq: string) => (
+                        {userData.user.equipment.map((eq: string) => (
                           <span
                             key={eq}
                             className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700"

@@ -77,10 +77,12 @@ export default function EditProfileModal({
     },
     onSuccess: () => {
       showToast("Profile updated successfully! ✅", "success");
+      // Invalidate related queries - React Query will refetch automatically
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       onClose();
-      // Refresh the page to show updated data
-      window.location.reload();
+      // No need for window.location.reload() - React Query handles updates!
     },
     onError: () => {
       showToast("Failed to update profile", "error");

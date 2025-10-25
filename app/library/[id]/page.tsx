@@ -311,22 +311,40 @@ export default function ExerciseDetailPage() {
                     // Skip empty lines
                     if (!trimmedLine) return null;
                     
-                    // Handle bullet points (lines starting with *)
-                    if (trimmedLine.startsWith('*')) {
-                      const content = trimmedLine.replace(/^\*\s+/, '');
-                      // Convert **text** to bold
-                      const parts = content.split(/(\*\*.*?\*\*)/g);
+                    // Helper function to render text with bold formatting
+                    const renderWithBold = (text: string) => {
+                      const parts = text.split(/(\*\*.*?\*\*)/g);
+                      return parts.map((part, i) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                          return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
+                        }
+                        return <span key={i}>{part}</span>;
+                      });
+                    };
+                    
+                    // Handle numbered lists (1., 2., 3., etc.)
+                    const numberedMatch = trimmedLine.match(/^(\d+)\.\s+(.+)/);
+                    if (numberedMatch) {
+                      const [, number, content] = numberedMatch;
+                      return (
+                        <div key={index} className="mb-3 flex gap-3">
+                          <span className="text-amber-600 font-semibold flex-shrink-0">{number}.</span>
+                          <span className="leading-relaxed">
+                            {renderWithBold(content)}
+                          </span>
+                        </div>
+                      );
+                    }
+                    
+                    // Handle bullet points (lines starting with * or -)
+                    if (trimmedLine.startsWith('*') || trimmedLine.startsWith('-')) {
+                      const content = trimmedLine.replace(/^[\*\-]\s+/, '');
                       
                       return (
                         <div key={index} className="mb-3 flex gap-3">
                           <span className="text-amber-600 flex-shrink-0">•</span>
                           <span className="leading-relaxed">
-                            {parts.map((part, i) => {
-                              if (part.startsWith('**') && part.endsWith('**')) {
-                                return <strong key={i}>{part.slice(2, -2)}</strong>;
-                              }
-                              return <span key={i}>{part}</span>;
-                            })}
+                            {renderWithBold(content)}
                           </span>
                         </div>
                       );
@@ -335,7 +353,7 @@ export default function ExerciseDetailPage() {
                     // Regular paragraph
                     return (
                       <p key={index} className="mb-3 leading-relaxed">
-                        {trimmedLine}
+                        {renderWithBold(trimmedLine)}
                       </p>
                     );
                   })}

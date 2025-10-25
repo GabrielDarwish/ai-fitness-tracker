@@ -3,7 +3,7 @@
  * Business logic for AI-powered features using Gemini
  */
 
-import { exerciseRepository } from "../repositories";
+import { exerciseRepository, workoutRepository, nutritionRepository, progressRepository } from "../repositories";
 import { GenerateWorkoutRequest, GeneratedExercise } from "@/types/api";
 import { cleanMarkdownCodeBlock } from "../utils";
 import { AppError } from "../utils/errors";
@@ -206,42 +206,241 @@ IMPORTANT:
   }
 
   /**
-   * Generate AI insights based on user data
+   * Generate personalized insights based on real user data
    */
-  async generateInsights(focusArea?: string): Promise<string> {
+  async generatePersonalizedInsights(
+    userId: string,
+    userGoals?: string
+  ): Promise<string> {
     if (!this.isConfigured()) {
-      throw new AppError("AI features are not configured", 500);
+      return "AI insights are not available. Keep up the great work and stay consistent with your training!";
     }
 
-    const prompt = `As a fitness coach, provide 3-5 motivational and actionable insights for someone ${
-      focusArea ? `focusing on ${focusArea}` : "working on their fitness goals"
-    }. Keep it brief and encouraging.`;
+    // Fetch real user data from last 7 days
+    const [workoutAnalytics, nutritionAvgs] = await Promise.all([
+      workoutRepository.getAnalyticsByUserId(userId, 7),
+      nutritionRepository.calculateAverages(userId, 7),
+    ]);
 
-    const response = await fetch(`${this.modelEndpoint}?key=${this.apiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
+    // Build data-driven prompt
+    const prompt = `You are a professional fitness coach analyzing a user's REAL fitness data. Provide a brief, motivational insight (2-3 sentences max).
+
+**User Goal:** ${userGoals || "general fitness"}
+
+**Last 7 Days - ACTUAL DATA:**
+- Workouts completed: ${workoutAnalytics.totalWorkouts}
+- Total sets: ${workoutAnalytics.totalSets}
+- Total volume lifted: ${workoutAnalytics.totalVolume} kg
+- Average workout duration: ${workoutAnalytics.avgDuration} minutes
+- Consistency score: ${workoutAnalytics.consistencyScore}%
+- Nutrition tracking: ${nutritionAvgs.totalDays} days logged
+- Average daily calories: ${nutritionAvgs.avgCalories} kcal
+- Average daily protein: ${nutritionAvgs.avgProtein}g
+
+Provide specific, actionable feedback based on these numbers. If data is limited, encourage consistency. Be encouraging but honest. Keep it brief and motivational.`;
+
+    try {
+      const response = await fetch(`${this.modelEndpoint}?key=${this.apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gemini API error");
+      }
+
+      const data = await response.json();
+      const insights =
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Keep pushing! Your consistency will pay off.";
+
+      return insights;
+    } catch (error) {
+      console.error("Error generating insights:", error);
+      return "Keep up the great work! Consistency is key to reaching your goals.";
+    }
+  }
+
+  /**
+   * Generate simple AI text response
+   * Used for form tips, general queries, etc.
+   */
+  async generateText(prompt: string): Promise<string> {
+    if (!this.isConfigured()) {
+      return "AI features are not available. Please add GEMINI_API_KEY to your environment variables.";
+    }
+
+    try {
+      const response = await fetch(`${this.modelEndpoint}?key=${this.apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gemini API error");
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
+
+      return text;
+    } catch (error) {
+      console.error("Error generating AI text:", error);
+      return "Unable to generate response at this time. Please try again.";
+    }
+  }
+
+  /**
+   * Generate detailed progress insights
+   */
+  async generateProgressInsights(
+    userId: string,
+    userGoals?: string
+  ): Promise<{
+    strengths: string[];
+    improvements: string[];
+    recommendations: string[];
+    stats?: Record<string, unknown>;
+  }> {
+    if (!this.isConfigured()) {
+      return {
+        strengths: ["Keep logging your workouts consistently"],
+        improvements: ["Track more metrics for detailed insights"],
+        recommendations: ["Stay focused on your goals"],
+      };
+    }
+
+    // Fetch comprehensive data from last 30 days
+    const [workoutAnalytics, nutritionAvgs, weightTrend] = await Promise.all([
+      workoutRepository.getAnalyticsByUserId(userId, 30),
+      nutritionRepository.calculateAverages(userId, 30),
+      progressRepository.calculateWeightTrend(userId, 30),
+    ]);
+
+    // Format body part distribution
+    const bodyPartsText = Object.entries(workoutAnalytics.bodyPartDistribution)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([part, count]) => `${part} (${count} exercises)`)
+      .join(", ");
+
+    const prompt = `You are a professional fitness coach analyzing a user's progress over 30 days. Based on the following REAL DATA, provide structured feedback.
+
+**User Goal:** ${userGoals || "general fitness"}
+
+**30-Day Workout Summary - ACTUAL DATA:**
+- Workouts completed: ${workoutAnalytics.totalWorkouts}
+- Total sets performed: ${workoutAnalytics.totalSets}
+- Total volume lifted: ${(workoutAnalytics.totalVolume / 1000).toFixed(1)} tons
+- Average workout duration: ${workoutAnalytics.avgDuration} minutes
+- Consistency score: ${workoutAnalytics.consistencyScore}% (target: 75%+)
+- Body parts trained: ${bodyPartsText || "varied training"}
+
+**30-Day Nutrition Summary - ACTUAL DATA:**
+- Days with nutrition logged: ${nutritionAvgs.totalDays} / 30
+- Average daily calories: ${nutritionAvgs.avgCalories} kcal
+- Average daily protein: ${nutritionAvgs.avgProtein}g
+- Average daily carbs: ${nutritionAvgs.avgCarbs}g
+- Average daily fats: ${nutritionAvgs.avgFat}g
+
+**Weight Trend - ACTUAL DATA:**
+- Trend: ${weightTrend.trend}
+- Weight change: ${weightTrend.change ? `${weightTrend.change > 0 ? "+" : ""}${weightTrend.change.toFixed(1)} kg` : "no data"}
+
+Provide your analysis in this exact JSON format (no markdown, just raw JSON):
+{
+  "strengths": ["specific strength 1", "specific strength 2", "specific strength 3"],
+  "improvements": ["specific area to improve 1", "specific area to improve 2"],
+  "recommendations": ["actionable recommendation 1", "actionable recommendation 2", "actionable recommendation 3"]
+}
+
+Each point should be 1-2 sentences, specific to the data provided, and actionable. Reference actual numbers where possible.`;
+
+    try {
+      const response = await fetch(`${this.modelEndpoint}?key=${this.apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gemini API error");
+      }
+
+      const data = await response.json();
+      let insightsText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+      // Clean up markdown
+      insightsText = cleanMarkdownCodeBlock(insightsText);
+
+      // Parse JSON
+      const insights = JSON.parse(insightsText);
+
+      return {
+        strengths: insights.strengths || [],
+        improvements: insights.improvements || [],
+        recommendations: insights.recommendations || [],
+        stats: {
+          workouts: workoutAnalytics.totalWorkouts,
+          totalSets: workoutAnalytics.totalSets,
+          totalVolume: workoutAnalytics.totalVolume,
+          consistencyScore: workoutAnalytics.consistencyScore,
+          nutritionDays: nutritionAvgs.totalDays,
+          weightTrend: weightTrend.trend,
+        },
+      };
+    } catch (error) {
+      console.error("Error generating progress insights:", error);
+      return {
+        strengths: [
+          `You completed ${workoutAnalytics.totalWorkouts} workouts in the last 30 days!`,
+          `Your consistency score is ${workoutAnalytics.consistencyScore}%.`,
         ],
-      }),
-    });
-
-    if (!response.ok) {
-      throw new AppError("Failed to generate insights", 500);
+        improvements: [
+          nutritionAvgs.totalDays < 15
+            ? "Consider tracking nutrition more consistently for better insights."
+            : "Keep up the nutrition tracking!",
+        ],
+        recommendations: [
+          "Stay consistent with your training schedule.",
+          "Focus on progressive overload in your workouts.",
+          "Ensure adequate protein intake for your goals.",
+        ],
+        stats: {
+          workouts: workoutAnalytics.totalWorkouts,
+          totalSets: workoutAnalytics.totalSets,
+          consistencyScore: workoutAnalytics.consistencyScore,
+        },
+      };
     }
-
-    const data = await response.json();
-    const insights = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-    return insights;
   }
 }
 
 // Export singleton instance
 export const aiService = new AIService();
-

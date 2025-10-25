@@ -246,6 +246,89 @@ export class WorkoutRepository {
       totalSets,
     };
   }
+
+  /**
+   * Get detailed analytics for time period
+   */
+  async getAnalyticsByUserId(
+    userId: string,
+    days: number = 30
+  ): Promise<{
+    totalWorkouts: number;
+    totalSets: number;
+    totalVolume: number;
+    avgDuration: number;
+    bodyPartDistribution: Record<string, number>;
+    consistencyScore: number;
+  }> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const workouts = await prisma.workoutLog.findMany({
+      where: {
+        userId,
+        date: { gte: startDate },
+      },
+      include: {
+        exercises: {
+          include: {
+            exercise: {
+              select: {
+                bodyPart: true,
+              },
+            },
+            sets: true,
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+
+    const totalWorkouts = workouts.length;
+    const totalSets = workouts.reduce(
+      (sum, log) =>
+        sum + log.exercises.reduce((exSum, ex) => exSum + ex.sets.length, 0),
+      0
+    );
+
+    const totalVolume = workouts.reduce(
+      (sum, log) =>
+        sum +
+        log.exercises.reduce(
+          (exSum, ex) =>
+            exSum +
+            ex.sets.reduce((setSum, set) => setSum + (set.weight || 0) * set.reps, 0),
+          0
+        ),
+      0
+    );
+
+    const totalDuration = workouts.reduce((sum, log) => sum + (log.duration || 0), 0);
+    const avgDuration = totalWorkouts > 0 ? Math.round(totalDuration / totalWorkouts) : 0;
+
+    // Calculate body part distribution
+    const bodyPartCounts: Record<string, number> = {};
+    workouts.forEach((log) => {
+      log.exercises.forEach((ex) => {
+        const bodyPart = ex.exercise.bodyPart || "unknown";
+        bodyPartCounts[bodyPart] = (bodyPartCounts[bodyPart] || 0) + 1;
+      });
+    });
+
+    // Calculate consistency score (workouts per week)
+    const weeksInPeriod = days / 7;
+    const workoutsPerWeek = totalWorkouts / weeksInPeriod;
+    const consistencyScore = Math.min(100, Math.round((workoutsPerWeek / 4) * 100));
+
+    return {
+      totalWorkouts,
+      totalSets,
+      totalVolume: Math.round(totalVolume),
+      avgDuration,
+      bodyPartDistribution: bodyPartCounts,
+      consistencyScore,
+    };
+  }
 }
 
 // Export singleton instance

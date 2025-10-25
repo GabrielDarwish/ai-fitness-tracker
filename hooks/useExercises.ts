@@ -98,14 +98,14 @@ export function useExerciseSync() {
   const queryClient = useQueryClient();
 
   const { data: syncStatus, isLoading: checkingSync } = useQuery({
-    queryKey: ["exercise-sync-status"],
+    queryKey: QUERY_KEYS.EXERCISE_SYNC,
     queryFn: () => api.exercises.checkSync(),
   });
 
   const syncMutation = useMutation({
     mutationFn: () => api.exercises.syncExercises(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["exercise-sync-status"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISE_SYNC });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.EXERCISES() });
     },
   });

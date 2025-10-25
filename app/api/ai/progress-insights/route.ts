@@ -1,6 +1,6 @@
 /**
  * AI Progress Insights API Route
- * GET /api/ai/progress-insights - Generate detailed progress analysis
+ * GET /api/ai/progress-insights - Generate detailed progress analysis based on real data
  */
 
 import { NextResponse } from "next/server";
@@ -11,15 +11,11 @@ import { asyncHandler, createSuccessResponse } from "@/lib/utils/errors";
 export const GET = asyncHandler(async () => {
   const user = await getCurrentUserProfile();
 
-  // Generate progress insights
-  const insights = await aiService.generateInsights(user.goals || undefined);
-
-  return createSuccessResponse(
-    {
-      strengths: [insights],
-      improvements: ["Keep tracking your progress consistently"],
-      recommendations: ["Stay focused on your goals"],
-    },
-    200
+  // Generate comprehensive progress insights with real data
+  const result = await aiService.generateProgressInsights(
+    user.id,
+    user.goals || undefined
   );
+
+  return createSuccessResponse(result, 200);
 });

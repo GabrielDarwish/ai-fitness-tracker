@@ -22,14 +22,52 @@ export class AppError extends Error {
 }
 
 /**
- * Error Response Builder
+ * Error Response Builder with Field-Level Details
  */
 export function createErrorResponse(
   error: unknown,
   fallbackMessage: string = ERROR_MESSAGES.INTERNAL_SERVER_ERROR
 ): NextResponse {
-  console.error("Error:", error);
+  // Log error for debugging (in production, use proper logging service)
+  if (process.env.NODE_ENV === "development") {
+    console.error("API Error:", error);
+  }
 
+  // Handle ValidationError with field details
+  if (error instanceof ValidationError) {
+    const response: {
+      error: string;
+      code: string;
+      fields?: Record<string, string>;
+    } = {
+      error: error.message,
+      code: error.code || "VALIDATION_ERROR",
+    };
+
+    if (error.fields && Object.keys(error.fields).length > 0) {
+      response.fields = error.fields;
+    }
+
+    return NextResponse.json(response, { status: error.statusCode });
+  }
+
+  // Handle RateLimitError with retry-after
+  if (error instanceof RateLimitError) {
+    const headers: Record<string, string> = {};
+    if (error.retryAfter) {
+      headers["Retry-After"] = String(error.retryAfter);
+    }
+
+    return NextResponse.json(
+      {
+        error: error.message,
+        code: error.code,
+      },
+      { status: error.statusCode, headers }
+    );
+  }
+
+  // Handle other AppErrors
   if (error instanceof AppError) {
     return NextResponse.json(
       {
@@ -40,6 +78,7 @@ export function createErrorResponse(
     );
   }
 
+  // Handle generic errors
   if (error instanceof Error) {
     return NextResponse.json(
       {
@@ -49,6 +88,7 @@ export function createErrorResponse(
     );
   }
 
+  // Fallback for unknown errors
   return NextResponse.json(
     {
       error: fallbackMessage,
@@ -90,10 +130,13 @@ export function asyncHandler(
 }
 
 /**
- * Validation Error
+ * Validation Error with Field-Level Details
  */
 export class ValidationError extends AppError {
-  constructor(message: string, public fields?: Record<string, string>) {
+  constructor(
+    message: string = "Validation failed. Please check your input.",
+    public fields?: Record<string, string>
+  ) {
     super(message, 400, "VALIDATION_ERROR");
   }
 }
@@ -126,7 +169,28 @@ export class ForbiddenError extends AppError {
 }
 
 /**
- * Handle Prisma Errors
+ * Conflict Error (409)
+ */
+export class ConflictError extends AppError {
+  constructor(message: string = "Resource already exists") {
+    super(message, 409, "CONFLICT");
+  }
+}
+
+/**
+ * Rate Limit Error (429)
+ */
+export class RateLimitError extends AppError {
+  constructor(
+    message: string = "Too many requests. Please try again later.",
+    public retryAfter?: number
+  ) {
+    super(message, 429, "RATE_LIMIT_EXCEEDED");
+  }
+}
+
+/**
+ * Handle Prisma Errors with User-Friendly Messages
  */
 export function handlePrismaError(error: unknown): never {
   // Check for Prisma-specific errors
@@ -135,14 +199,51 @@ export function handlePrismaError(error: unknown): never {
     
     switch (prismaError.code) {
       case "P2002":
-        throw new ValidationError("A record with this value already exists");
+        throw new ConflictError(
+          "This record already exists. Please use a different value."
+        );
       case "P2025":
-        throw new NotFoundError("Record");
+        throw new NotFoundError("The requested record was not found");
       case "P2003":
-        throw new ValidationError("Related record not found");
+        throw new ValidationError(
+          "Cannot complete this action because a related record is missing"
+        );
+      case "P2014":
+        throw new ValidationError(
+          "This action would violate a required relationship"
+        );
+      case "P2023":
+        throw new ValidationError("The provided ID format is invalid");
       default:
-        throw new AppError("Database operation failed", 500);
+        throw new AppError(
+          "We couldn't complete your request. Please try again.",
+          500
+        );
     }
+  }
+
+  throw error;
+}
+
+/**
+ * Convert Zod Error to ValidationError with Field Details
+ */
+export function handleZodError(error: unknown): never {
+  // Dynamic import to avoid circular dependency
+  const { ZodError } = require("zod");
+  
+  if (error instanceof ZodError) {
+    const fields: Record<string, string> = {};
+    
+    error.issues.forEach((issue) => {
+      const path = issue.path.join(".");
+      fields[path] = issue.message;
+    });
+
+    throw new ValidationError(
+      "Please check your input and try again.",
+      fields
+    );
   }
 
   throw error;

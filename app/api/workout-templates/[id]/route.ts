@@ -11,8 +11,9 @@ import { asyncHandler, createSuccessResponse } from "@/lib/utils/errors";
 export const DELETE = asyncHandler(
   async (req: Request, { params }: { params: { id: string } }) => {
     const user = await getCurrentUserProfile();
-    const result = await workoutService.deleteTemplate(params.id, user.id);
+    await workoutService.deleteTemplate(params.id, user.id);
 
-    return createSuccessResponse(result);
+    // Return 204 No Content for successful deletion
+    return new Response(null, { status: 204 });
   }
 );

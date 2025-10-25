@@ -6,13 +6,27 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/utils/auth";
 import { asyncHandler, createSuccessResponse, AppError } from "@/lib/utils/errors";
-import { parseRequestBody, validateRequiredFields } from "@/lib/utils/validation";
+import { parseRequestBody } from "@/lib/utils/validation";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/utils/rate-limit";
 
 export const POST = asyncHandler(async (req: Request) => {
-  await getCurrentUser();
+  const { id: userId } = await getCurrentUser();
+  
+  // Rate limit nutrition analysis (external API call)
+  checkRateLimit(userId, RATE_LIMITS.NUTRITION_ANALYZE);
 
   const body = await parseRequestBody<{ query: string }>(req);
-  validateRequiredFields(body, ["query"]);
+  
+  // Validate with Zod schema
+  try {
+    const { analyzeFoodSchema } = await import("@/lib/validations/nutrition");
+    const validatedData = analyzeFoodSchema.parse(body);
+    body.query = validatedData.query;
+  } catch (error) {
+    const { handleZodError } = await import("@/lib/utils/errors");
+    handleZodError(error);
+    throw error;
+  }
 
   const nutritionixAppId = process.env.NUTRITIONIX_APP_ID;
   const nutritionixApiKey = process.env.NUTRITIONIX_API_KEY;

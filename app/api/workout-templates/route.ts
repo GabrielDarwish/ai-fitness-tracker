@@ -28,13 +28,16 @@ export const POST = asyncHandler(async (req: Request) => {
   const user = await getCurrentUserProfile();
   const body = await parseRequestBody<CreateWorkoutTemplateRequest>(req);
 
-  validateRequiredFields(body, ["name", "exercises"]);
-
-  if (!Array.isArray(body.exercises) || body.exercises.length === 0) {
-    throw new ValidationError("Exercises must be a non-empty array");
+  // Validate with Zod schema
+  try {
+    const { createWorkoutTemplateSchema } = await import("@/lib/validations/workout");
+    const validatedData = createWorkoutTemplateSchema.parse(body);
+    
+    const result = await workoutService.createTemplate(user.id, validatedData);
+    return createSuccessResponse(result, 201);
+  } catch (error) {
+    const { handleZodError } = await import("@/lib/utils/errors");
+    handleZodError(error);
+    throw error;
   }
-
-  const result = await workoutService.createTemplate(user.id, body);
-
-  return createSuccessResponse(result, 201);
 });

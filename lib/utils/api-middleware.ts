@@ -35,7 +35,7 @@ export function withAuth(
       return await handler(req, user);
     } catch (error) {
       if (error instanceof Error && error.message === "Unauthorized") {
-        return createErrorResponse("Unauthorized", 401);
+        return createErrorResponse(new AppError("Unauthorized", 401));
       }
       throw error;
     }

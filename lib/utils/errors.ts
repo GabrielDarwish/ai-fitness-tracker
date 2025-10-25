@@ -4,6 +4,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { ZodError, ZodIssue } from "zod";
 import { ERROR_MESSAGES } from "../constants";
 
 /**
@@ -229,13 +230,10 @@ export function handlePrismaError(error: unknown): never {
  * Convert Zod Error to ValidationError with Field Details
  */
 export function handleZodError(error: unknown): never {
-  // Dynamic import to avoid circular dependency
-  const { ZodError } = require("zod");
-  
   if (error instanceof ZodError) {
     const fields: Record<string, string> = {};
     
-    error.issues.forEach((issue) => {
+    error.issues.forEach((issue: ZodIssue) => {
       const path = issue.path.join(".");
       fields[path] = issue.message;
     });

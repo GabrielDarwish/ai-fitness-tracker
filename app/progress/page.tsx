@@ -163,7 +163,33 @@ export default function ProgressPage() {
           </div>
         )}
 
+        {/* Empty State */}
+        {workoutChartData.length === 0 && nutritionChartData.length === 0 && (
+          <div className="mb-8 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-12 text-center">
+            <div className="mx-auto mb-4 text-6xl">📊</div>
+            <h3 className="mb-2 text-2xl font-bold text-slate-900">No Progress Data Yet</h3>
+            <p className="mb-6 text-slate-600">
+              Start logging your workouts and nutrition to see your progress visualized here!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/workouts"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-blue-600"
+              >
+                🏋️ Log Workout
+              </Link>
+              <Link
+                href="/nutrition"
+                className="inline-flex items-center gap-2 rounded-lg bg-green-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-green-600"
+              >
+                🥗 Log Nutrition
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Charts Grid */}
+        {(workoutChartData.length > 0 || nutritionChartData.length > 0) && (
         <div className="mb-8 grid gap-6 lg:grid-cols-2">
           {/* Workout Volume Chart */}
           {workoutChartData.length > 0 && (
@@ -232,28 +258,6 @@ export default function ProgressPage() {
             </div>
           )}
         </div>
-
-        {/* Empty State */}
-        {totalWorkouts === 0 && nutritionChartData.length === 0 && (
-          <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-white/50 p-12 text-center">
-            <div className="mb-4 text-6xl">📊</div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900">No data yet</h3>
-            <p className="mb-6 text-slate-600">Start working out and logging nutrition to see your progress!</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                href="/ai-builder"
-                className="rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-blue-600 hover:to-blue-700"
-              >
-                Create Workout
-              </Link>
-              <Link
-                href="/nutrition"
-                className="rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:from-amber-600 hover:to-orange-600"
-              >
-                Log Nutrition
-              </Link>
-            </div>
-          </div>
         )}
 
         {/* Quick Action Cards */}

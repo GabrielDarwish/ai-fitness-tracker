@@ -88,7 +88,7 @@ export const GET = asyncHandler(async (req: Request) => {
       userId: user.id,
       date: { gte: startDate },
     },
-    orderBy: { date: "desc" },
+    orderBy: { date: "asc" }, // Ascending for chart display
   });
 
   return createSuccessResponse({ logs });

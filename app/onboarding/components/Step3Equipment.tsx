@@ -1,3 +1,8 @@
+"use client";
+import { useState } from "react";
+import { equipmentSchema } from "@/lib/validations/onboarding";
+import { z } from "zod";
+
 interface Step3EquipmentProps {
   formData: {
     equipment: string[];
@@ -8,19 +13,36 @@ interface Step3EquipmentProps {
   isSubmitting: boolean;
 }
 
+// Equipment options matching ExerciseDB API values EXACTLY
 const equipmentOptions = [
-  { value: "dumbbells", label: "Dumbbells", icon: "🏋️" },
+  { value: "body weight", label: "Body Weight", icon: "💪" },
+  { value: "dumbbell", label: "Dumbbells", icon: "🏋️" },
   { value: "barbell", label: "Barbell", icon: "🏋️‍♂️" },
   { value: "kettlebell", label: "Kettlebell", icon: "🔔" },
-  { value: "resistance-bands", label: "Resistance Bands", icon: "🎗️" },
-  { value: "pull-up-bar", label: "Pull-up Bar", icon: "🚪" },
-  { value: "bench", label: "Bench", icon: "🪑" },
-  { value: "yoga-mat", label: "Yoga Mat", icon: "🧘‍♀️" },
-  { value: "jump-rope", label: "Jump Rope", icon: "🪢" },
-  { value: "foam-roller", label: "Foam Roller", icon: "📏" },
-  { value: "medicine-ball", label: "Medicine Ball", icon: "⚽" },
-  { value: "trx-straps", label: "TRX Straps", icon: "🎽" },
-  { value: "none", label: "No Equipment (Bodyweight)", icon: "💪" },
+  { value: "band", label: "Resistance Bands", icon: "🎗️" },
+  { value: "resistance band", label: "Resistance Band", icon: "🎗️" },
+  { value: "cable", label: "Cable Machine", icon: "🔗" },
+  { value: "leverage machine", label: "Leverage Machine", icon: "⚙️" },
+  { value: "smith machine", label: "Smith Machine", icon: "🏗️" },
+  { value: "stability ball", label: "Stability Ball", icon: "⚽" },
+  { value: "bosu ball", label: "Bosu Ball", icon: "🔵" },
+  { value: "medicine ball", label: "Medicine Ball", icon: "🏀" },
+  { value: "ez barbell", label: "EZ Barbell", icon: "〰️" },
+  { value: "olympic barbell", label: "Olympic Barbell", icon: "🏋️" },
+  { value: "trap bar", label: "Trap Bar", icon: "⬡" },
+  { value: "roller", label: "Foam Roller", icon: "📏" },
+  { value: "wheel roller", label: "Wheel Roller", icon: "🛞" },
+  { value: "rope", label: "Rope", icon: "🪢" },
+  { value: "hammer", label: "Hammer", icon: "🔨" },
+  { value: "sled machine", label: "Sled Machine", icon: "🛷" },
+  { value: "tire", label: "Tire", icon: "🛞" },
+  { value: "elliptical machine", label: "Elliptical", icon: "🏃" },
+  { value: "stationary bike", label: "Stationary Bike", icon: "🚴" },
+  { value: "stepmill machine", label: "Stepmill", icon: "🪜" },
+  { value: "skierg machine", label: "Ski Erg", icon: "⛷️" },
+  { value: "upper body ergometer", label: "Upper Body Erg", icon: "🚣" },
+  { value: "assisted", label: "Assisted Machine", icon: "🤝" },
+  { value: "weighted", label: "Weighted", icon: "⚖️" },
 ];
 
 export default function Step3Equipment({
@@ -30,34 +52,35 @@ export default function Step3Equipment({
   onPrev,
   isSubmitting,
 }: Step3EquipmentProps) {
+  const [errors, setErrors] = useState<z.ZodIssue[]>([]);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
   const toggleEquipment = (value: string) => {
     const current = formData.equipment;
     
-    // If "none" is selected, clear all others
-    if (value === "none") {
-      updateFormData("equipment", current.includes("none") ? [] : ["none"]);
-      return;
-    }
-    
-    // If selecting other equipment, remove "none"
-    const filtered = current.filter((item) => item !== "none");
-    
-    if (filtered.includes(value)) {
+    if (current.includes(value)) {
+      // Remove if already selected
       updateFormData(
         "equipment",
-        filtered.filter((item) => item !== value)
+        current.filter((item) => item !== value)
       );
     } else {
-      updateFormData("equipment", [...filtered, value]);
+      // Add if not selected
+      updateFormData("equipment", [...current, value]);
     }
   };
 
   const handleSubmit = () => {
-    if (formData.equipment.length === 0) {
-      alert("Please select at least one option");
-      return;
+    setTouched({ equipment: true });
+    try {
+      equipmentSchema.parse(formData);
+      setErrors([]);
+      onSubmit();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors(error.issues);
+      }
     }
-    onSubmit();
   };
 
   return (
@@ -68,7 +91,7 @@ export default function Step3Equipment({
       </div>
 
       {/* Equipment Grid */}
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {equipmentOptions.map((equipment) => {
           const isSelected = formData.equipment.includes(equipment.value);
           return (

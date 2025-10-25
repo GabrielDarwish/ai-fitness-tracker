@@ -63,6 +63,26 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
+          {/* AI Workout Builder Card - Active */}
+          <Link
+            href="/ai-builder"
+            className="group rounded-2xl border border-slate-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-xl transition-all duration-200 hover:border-amber-300 hover:shadow-2xl"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-2xl shadow-lg transition-transform group-hover:scale-110">
+                🤖
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">AI Workout Builder</h2>
+            </div>
+            <p className="text-slate-600">Generate personalized workout plans</p>
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-amber-600">
+              Create workout
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
           {/* Workouts Card - Coming Soon */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
             <div className="mb-4 flex items-center gap-3">

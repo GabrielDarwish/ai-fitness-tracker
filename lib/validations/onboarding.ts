@@ -10,19 +10,17 @@ export const profileSchema = z.object({
     .max(100, "Name must be less than 100 characters")
     .trim(),
   age: z
-    .number({ invalid_type_error: "Age must be a number" })
+    .number()
     .int("Age must be a whole number")
     .min(13, "You must be at least 13 years old")
     .max(120, "Age must be less than 120"),
-  gender: z.enum(["male", "female", "other", "prefer-not-to-say"], {
-    errorMap: () => ({ message: "Please select a gender" }),
-  }),
+  gender: z.enum(["male", "female", "other", "prefer-not-to-say"]),
   height: z
-    .number({ invalid_type_error: "Height must be a number" })
+    .number()
     .min(50, "Height must be at least 50cm")
     .max(300, "Height must be less than 300cm"),
   weight: z
-    .number({ invalid_type_error: "Weight must be a number" })
+    .number()
     .min(20, "Weight must be at least 20kg")
     .max(500, "Weight must be less than 500kg"),
 });
@@ -31,25 +29,50 @@ export const profileSchema = z.object({
  * Validation schema for onboarding Step 2: Goals
  */
 export const goalsSchema = z.object({
-  goals: z.enum(
-    ["weight-loss", "muscle-gain", "endurance", "flexibility", "general-fitness"],
-    {
-      errorMap: () => ({ message: "Please select a fitness goal" }),
-    }
-  ),
+  goals: z.enum(["weight-loss", "muscle-gain", "endurance", "flexibility", "general-fitness"]),
 });
+
+/**
+ * Valid equipment types (matching ExerciseDB API exactly)
+ */
+const validEquipment = [
+  "assisted",
+  "band",
+  "barbell",
+  "body weight",
+  "bosu ball",
+  "cable",
+  "dumbbell",
+  "elliptical machine",
+  "ez barbell",
+  "hammer",
+  "kettlebell",
+  "leverage machine",
+  "medicine ball",
+  "olympic barbell",
+  "resistance band",
+  "roller",
+  "rope",
+  "skierg machine",
+  "sled machine",
+  "smith machine",
+  "stability ball",
+  "stationary bike",
+  "stepmill machine",
+  "tire",
+  "trap bar",
+  "upper body ergometer",
+  "weighted",
+  "wheel roller",
+] as const;
 
 /**
  * Validation schema for onboarding Step 3: Equipment
  */
 export const equipmentSchema = z.object({
   equipment: z
-    .array(z.string())
-    .min(1, "Please select at least one equipment option")
-    .refine(
-      (items) => items.every((item) => item.length > 0),
-      "Invalid equipment selection"
-    ),
+    .array(z.enum(validEquipment))
+    .min(1, "Please select at least one equipment option"),
 });
 
 /**

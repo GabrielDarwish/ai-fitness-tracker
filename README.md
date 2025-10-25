@@ -2,6 +2,42 @@
 
 An AI-powered full-stack fitness tracking application built with Next.js 14, Supabase, and Gemini AI.
 
+## ✨ Features
+
+### ✅ Completed
+
+1. **🔐 Authentication**
+   - Google & GitHub OAuth
+   - Secure session management with NextAuth.js
+   - Account linking support
+
+2. **👤 User Onboarding**
+   - 3-step onboarding flow (Profile, Goals, Equipment)
+   - Form validation with Zod
+   - Elegant, modern design
+
+3. **📚 Exercise Library**
+   - 1300+ exercises from ExerciseDB API
+   - Auto-sync on first visit (cached locally)
+   - Filter by body part, equipment, target muscle
+   - Keyword search
+   - Save/unsave favorites
+   - Detailed exercise pages with GIF demos
+
+4. **🤖 AI Workout Builder**
+   - Generate personalized workouts using Google Gemini AI
+   - Based on user goals, equipment, duration, and focus area
+   - Smart exercise selection from your available equipment
+   - Structured workout plans (sets, reps, rest time)
+   - Save workouts as templates
+
+### 🚧 Coming Soon
+
+- **💪 My Workouts** - Manage saved workout templates
+- **📝 Workout Logging** - Track your workout sessions
+- **🥗 Nutrition Tracking** - Log meals with AI-powered food recognition
+- **📊 Progress Analytics** - Visualize your fitness journey
+
 ## 🚀 Tech Stack
 
 - **Framework:** Next.js 14 (App Router)

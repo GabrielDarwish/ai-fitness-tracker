@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { onboardingSchema } from "@/lib/validations/onboarding";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   try {
@@ -13,18 +15,10 @@ export async function POST(req: Request) {
 
     const data = await req.json();
 
-    // Validate required fields
-    if (!data.name || !data.age || !data.gender || !data.height || !data.weight || !data.goals) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Update user profile
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
+    // Validate data with Zod schema
+    let validatedData;
+    try {
+      validatedData = onboardingSchema.parse({
         name: data.name,
         age: Number(data.age),
         gender: data.gender,
@@ -32,6 +26,31 @@ export async function POST(req: Request) {
         weight: Number(data.weight),
         goals: data.goals,
         equipment: data.equipment || [],
+      });
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return NextResponse.json(
+          { 
+            error: "Validation failed",
+            details: validationError.errors.map(e => e.message).join(", ")
+          },
+          { status: 400 }
+        );
+      }
+      throw validationError;
+    }
+
+    // Update user profile with validated data
+    const user = await prisma.user.update({
+      where: { email: session.user.email },
+      data: {
+        name: validatedData.name,
+        age: validatedData.age,
+        gender: validatedData.gender,
+        height: validatedData.height,
+        weight: validatedData.weight,
+        goals: validatedData.goals,
+        equipment: validatedData.equipment,
       },
     });
 

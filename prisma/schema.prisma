@@ -50,9 +50,10 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-eiopqrtuwy  []\eiopqrtuwy  []\ Body Info
-  eiopqrtuwy  []\  Int?
-eiopqrtuwy  []\    String?   // Gender
+  
+  // Body Info
+  age           Int?
+  gender        String?   // Gender
   height        Float?    // Height in cm or inches
   weight        Float?    // Current weight in kg or lbs
   
@@ -74,10 +75,10 @@ eiopqrtuwy  []\    String?   // Gender
 }
 
 model VerificationToken {
-  identifier String++
+  identifier String
   token      String   @unique
   expires    DateTime
-+
+
   @@unique([identifier, token])
 }
 
@@ -88,7 +89,7 @@ model VerificationToken {
 model Exercise {
   id           String   @id @default(cuid())
   apiId        String?  @unique // External API ID (e.g., ExerciseDB)
-  name         String+
+  name         String
   gifUrl       String?
   bodyPart     String   // chest, back, legs, shoulders, arms, core, etc.
   equipment    String   // barbell, dumbbell, bodyweight, machine, etc.
@@ -146,7 +147,7 @@ model TemplateExercise {
   templateId String
   exerciseId String
   sets       Int
-  reps       Int
+  reps       String // Can be "10-12", "30 seconds", etc.
   restTime   Int    // Rest time in seconds between sets
 
   template WorkoutTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)

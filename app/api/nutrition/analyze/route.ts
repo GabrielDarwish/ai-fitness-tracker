@@ -105,7 +105,16 @@ Rules:
       );
     }
 
-    const foods = data.foods.map((food: any) => ({
+    type FoodItem = {
+      name: string;
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      serving: string;
+    };
+
+    const foods: FoodItem[] = data.foods.map((food: any) => ({
       name: food.name,
       calories: Math.round(food.calories || 0),
       protein: Math.round(food.protein || 0),
@@ -115,10 +124,10 @@ Rules:
     }));
 
     const totals = {
-      calories: foods.reduce((sum: number, f) => sum + f.calories, 0),
-      protein: foods.reduce((sum: number, f) => sum + f.protein, 0),
-      carbs: foods.reduce((sum: number, f) => sum + f.carbs, 0),
-      fat: foods.reduce((sum: number, f) => sum + f.fat, 0),
+      calories: foods.reduce((sum: number, f: FoodItem) => sum + f.calories, 0),
+      protein: foods.reduce((sum: number, f: FoodItem) => sum + f.protein, 0),
+      carbs: foods.reduce((sum: number, f: FoodItem) => sum + f.carbs, 0),
+      fat: foods.reduce((sum: number, f: FoodItem) => sum + f.fat, 0),
     };
 
     return createSuccessResponse({

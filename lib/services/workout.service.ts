@@ -111,6 +111,19 @@ export class WorkoutService {
   }
 
   /**
+   * Get workout logs by date range
+   */
+  async getWorkoutsByDateRange(userId: string, startDate: Date, endDate: Date) {
+    const workouts = await workoutRepository.findLogsByDateRange(
+      userId,
+      startDate,
+      endDate
+    );
+
+    return { workouts };
+  }
+
+  /**
    * Update workout log
    */
   async updateWorkoutLog(

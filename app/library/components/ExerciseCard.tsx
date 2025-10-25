@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Target, Dumbbell, Focus } from "lucide-react";
@@ -15,28 +14,20 @@ interface ExerciseCardProps {
     target: string;
   };
   isSaved: boolean;
-  onToggleSave: (exerciseId: string, currentlySaved: boolean) => Promise<void>;
+  onToggleSave: (exerciseId: string, currentlySaved: boolean) => void;
+  isLoading?: boolean;
 }
 
 export default function ExerciseCard({
   exercise,
   isSaved,
   onToggleSave,
+  isLoading = false,
 }: ExerciseCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleToggleSave = async (e: React.MouseEvent) => {
+  const handleToggleSave = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation
     e.stopPropagation(); // Stop event bubbling
-    
-    setIsLoading(true);
-    try {
-      await onToggleSave(exercise.id, isSaved);
-    } catch (error) {
-      console.error("Error toggling save:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    onToggleSave(exercise.id, isSaved);
   };
 
   return (

@@ -46,6 +46,8 @@ export default function MyWorkoutsPage() {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [workoutToDelete, setWorkoutToDelete] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -69,14 +71,40 @@ export default function MyWorkoutsPage() {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete workout");
-      return null;
+      return id;
+    },
+    // Optimistic update
+    onMutate: async (deletedId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["workout-templates"] });
+      
+      // Snapshot previous value
+      const previousTemplates = queryClient.getQueryData(["workout-templates"]);
+      
+      // Optimistically remove from cache
+      queryClient.setQueryData(["workout-templates"], (old: any) => {
+        if (!old || !old.templates) return old;
+        return {
+          ...old,
+          templates: old.templates.filter((t: WorkoutTemplate) => t.id !== deletedId)
+        };
+      });
+      
+      return { previousTemplates };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workout-templates"] });
-      showToast("Workout deleted successfully", "success");
+      showToast("Workout deleted", "success");
+      setDeleteModalOpen(false);
+      setWorkoutToDelete(null);
     },
-    onError: () => {
+    onError: (_error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousTemplates) {
+        queryClient.setQueryData(["workout-templates"], context.previousTemplates);
+      }
       showToast("Failed to delete workout", "error");
+      setDeleteModalOpen(false);
     },
   });
 
@@ -226,9 +254,8 @@ export default function MyWorkoutsPage() {
                       </Link>
                       <button
                         onClick={() => {
-                          if (confirm("Are you sure you want to delete this workout?")) {
-                            deleteMutation.mutate(workout.id);
-                          }
+                          setWorkoutToDelete({ id: workout.id, name: workout.name });
+                          setDeleteModalOpen(true);
                         }}
                         disabled={deleteMutation.isPending}
                         className="rounded-xl border-2 border-red-200 bg-white px-4 py-3 text-sm font-medium text-red-600 transition-all duration-300 hover:bg-red-50 hover:border-red-300 hover:scale-105 active:scale-95 disabled:opacity-50"
@@ -245,6 +272,51 @@ export default function MyWorkoutsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && workoutToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
+            {/* Modal Header */}
+            <div className="mb-4">
+              <div className="flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-full bg-red-100">
+                <Trash2 className="h-7 w-7 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 text-center mb-2">
+                Delete Workout?
+              </h3>
+              <p className="text-sm text-slate-600 text-center">
+                Are you sure you want to delete <span className="font-semibold text-slate-900">"{workoutToDelete.name}"</span>? This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setWorkoutToDelete(null);
+                }}
+                disabled={deleteMutation.isPending}
+                className="flex-1 rounded-xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (workoutToDelete) {
+                    deleteMutation.mutate(workoutToDelete.id);
+                  }
+                }}
+                disabled={deleteMutation.isPending}
+                className="flex-1 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-red-600 hover:shadow-xl disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

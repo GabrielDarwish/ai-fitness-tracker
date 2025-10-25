@@ -26,7 +26,7 @@ export const createWorkoutTemplateSchema = z.object({
         reps: z
           .string()
           .min(1, "Reps are required")
-          .max(20, "Reps description too long")
+          .max(100, "Reps description must be less than 100 characters")
           .trim(),
         restTime: z
           .number()

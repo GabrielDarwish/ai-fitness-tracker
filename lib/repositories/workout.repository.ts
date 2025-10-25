@@ -180,6 +180,34 @@ export class WorkoutRepository {
   }
 
   /**
+   * Find workout logs by date range
+   */
+  async findLogsByDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<WorkoutLogWithExercises[]> {
+    return prisma.workoutLog.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        exercises: {
+          include: {
+            exercise: true,
+            sets: true,
+          },
+        },
+      },
+      orderBy: { date: "desc" },
+    });
+  }
+
+  /**
    * Update workout log
    */
   async updateLog(

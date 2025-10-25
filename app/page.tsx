@@ -93,15 +93,16 @@ export default function LandingPage() {
 
             {/* Right: Visual */}
             <div className="relative animate-scale-in delay-200">
-              <div className="relative mx-auto max-w-lg">
+              <div className="relative mx-auto w-full">
                 {/* Main mockup - Add your screenshot here */}
-                <div className="relative rounded-3xl border-4 border-slate-200 overflow-hidden shadow-2xl">
-                  <div className="aspect-[9/16] relative">
+                <div className="relative rounded-3xl border-4 border-slate-200 overflow-hidden shadow-2xl bg-slate-50">
+                  <div className="relative w-full">
                     <Image 
                       src="/dashboard-preview.png" 
                       alt="Dashboard Preview" 
-                      fill 
-                      className="object-cover" 
+                      width={1920}
+                      height={1080}
+                      className="w-full h-auto object-contain" 
                       priority
                     />
                   </div>

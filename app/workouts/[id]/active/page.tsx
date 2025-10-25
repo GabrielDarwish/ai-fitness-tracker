@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import LoadingLogo from "@/components/ui/loading-logo";
 
@@ -375,17 +374,11 @@ export default function ActiveWorkoutPage({
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4">
-          <Link
-            href="/workouts"
-            className="flex-1 rounded-lg border-2 border-slate-200 bg-white px-6 py-4 text-center text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50"
-          >
-            ⏸️ Pause & Save
-          </Link>
+        <div className="mt-8">
           <button
             onClick={() => completeWorkoutMutation.mutate()}
             disabled={completeWorkoutMutation.isPending}
-            className="flex-1 rounded-lg bg-green-500 px-6 py-4 text-center text-sm font-semibold text-white shadow-lg transition-all hover:bg-green-600 disabled:opacity-50"
+            className="w-full rounded-lg bg-green-500 px-6 py-4 text-center text-sm font-semibold text-white shadow-lg transition-all hover:bg-green-600 disabled:opacity-50"
           >
             {completeWorkoutMutation.isPending ? "Finishing..." : "✅ Finish Workout"}
           </button>

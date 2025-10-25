@@ -49,7 +49,7 @@ export function useSavedExercises() {
 }
 
 /**
- * Toggle save exercise (save/unsave)
+ * Toggle save exercise (save/unsave) with optimistic updates
  */
 export function useToggleSaveExercise() {
   const queryClient = useQueryClient();
@@ -57,31 +57,94 @@ export function useToggleSaveExercise() {
 
   const saveMutation = useMutation({
     mutationFn: (exerciseId: string) => api.savedExercises.save(exerciseId),
+    // Optimistic update
+    onMutate: async (exerciseId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.SAVED_EXERCISES });
+      
+      // Snapshot previous value
+      const previousSaved = queryClient.getQueryData(QUERY_KEYS.SAVED_EXERCISES);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(QUERY_KEYS.SAVED_EXERCISES, (old: any) => {
+        if (!old || !old.savedExercises) return old;
+        return {
+          ...old,
+          savedExercises: [
+            ...old.savedExercises,
+            { exerciseId, exercise: null } // Temporary entry
+          ]
+        };
+      });
+      
+      // Also update individual exercise queries
+      queryClient.setQueryData(QUERY_KEYS.EXERCISE(exerciseId), (old: any) => {
+        if (!old) return old;
+        return { ...old, isSaved: true };
+      });
+      
+      return { previousSaved };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SAVED_EXERCISES });
-      showToast("Exercise saved successfully", "success");
+      showToast("Exercise saved", "success");
     },
-    onError: () => {
+    onError: (_error, _exerciseId, context) => {
+      // Rollback on error
+      if (context?.previousSaved) {
+        queryClient.setQueryData(QUERY_KEYS.SAVED_EXERCISES, context.previousSaved);
+      }
       showToast("Failed to save exercise", "error");
     },
   });
 
   const unsaveMutation = useMutation({
     mutationFn: (exerciseId: string) => api.savedExercises.unsave(exerciseId),
+    // Optimistic update
+    onMutate: async (exerciseId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.SAVED_EXERCISES });
+      
+      // Snapshot previous value
+      const previousSaved = queryClient.getQueryData(QUERY_KEYS.SAVED_EXERCISES);
+      
+      // Optimistically remove from saved
+      queryClient.setQueryData(QUERY_KEYS.SAVED_EXERCISES, (old: any) => {
+        if (!old || !old.savedExercises) return old;
+        return {
+          ...old,
+          savedExercises: old.savedExercises.filter(
+            (item: any) => item.exerciseId !== exerciseId
+          )
+        };
+      });
+      
+      // Also update individual exercise queries
+      queryClient.setQueryData(QUERY_KEYS.EXERCISE(exerciseId), (old: any) => {
+        if (!old) return old;
+        return { ...old, isSaved: false };
+      });
+      
+      return { previousSaved };
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.SAVED_EXERCISES });
-      showToast("Exercise removed from saved", "success");
+      showToast("Exercise removed", "success");
     },
-    onError: () => {
-      showToast("Failed to unsave exercise", "error");
+    onError: (_error, _exerciseId, context) => {
+      // Rollback on error
+      if (context?.previousSaved) {
+        queryClient.setQueryData(QUERY_KEYS.SAVED_EXERCISES, context.previousSaved);
+      }
+      showToast("Failed to remove exercise", "error");
     },
   });
 
-  const toggleSave = async (exerciseId: string, isSaved: boolean) => {
+  const toggleSave = (exerciseId: string, isSaved: boolean) => {
     if (isSaved) {
-      await unsaveMutation.mutateAsync(exerciseId);
+      unsaveMutation.mutate(exerciseId);
     } else {
-      await saveMutation.mutateAsync(exerciseId);
+      saveMutation.mutate(exerciseId);
     }
   };
 

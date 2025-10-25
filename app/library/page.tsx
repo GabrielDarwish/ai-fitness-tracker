@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useToggleSaveExercise } from "@/hooks/useExercises";
 import ExerciseCard from "./components/ExerciseCard";
 import FilterBar from "./components/FilterBar";
 import Pagination from "./components/Pagination";
@@ -30,7 +31,7 @@ interface ExercisesResponse {
 export default function LibraryPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const { toggleSave, isLoading: isSavingExercise } = useToggleSaveExercise();
 
   const [activeTab, setActiveTab] = useState<"all" | "saved">("all");
   const [filters, setFilters] = useState({
@@ -114,43 +115,6 @@ export default function LibraryPage() {
     enabled: status === "authenticated",
   });
 
-  // Save exercise mutation
-  const saveMutation = useMutation({
-    mutationFn: async (exerciseId: string) => {
-      const res = await fetch("/api/saved-exercises", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exerciseId }),
-      });
-      if (!res.ok) throw new Error("Failed to save exercise");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["saved-exercises"] });
-    },
-  });
-
-  // Unsave exercise mutation
-  const unsaveMutation = useMutation({
-    mutationFn: async (exerciseId: string) => {
-      const res = await fetch(`/api/saved-exercises?exerciseId=${exerciseId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to unsave exercise");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["saved-exercises"] });
-    },
-  });
-
-  const handleToggleSave = async (exerciseId: string, isSaved: boolean) => {
-    if (isSaved) {
-      await unsaveMutation.mutateAsync(exerciseId);
-    } else {
-      await saveMutation.mutateAsync(exerciseId);
-    }
-  };
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -353,7 +317,8 @@ export default function LibraryPage() {
                   key={exercise.id}
                   exercise={exercise}
                   isSaved={savedExerciseIds.has(exercise.id)}
-                  onToggleSave={handleToggleSave}
+                  onToggleSave={toggleSave}
+                  isLoading={isSavingExercise}
                 />
               ))}
             </div>

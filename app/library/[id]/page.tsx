@@ -122,7 +122,13 @@ export default function ExerciseDetailPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-4 text-6xl animate-pulse">💪</div>
+          <div className="mb-6 flex justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Loading" 
+              className="h-40 w-40 animate-pulse"
+            />
+          </div>
           <p className="text-slate-600">Loading exercise...</p>
         </div>
       </div>
@@ -133,7 +139,13 @@ export default function ExerciseDetailPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-4 text-6xl">❌</div>
+          <div className="mb-6 flex justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Not found" 
+              className="h-40 w-40 opacity-50"
+            />
+          </div>
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Exercise Not Found</h2>
           <p className="mb-6 text-slate-600">The exercise you're looking for doesn't exist.</p>
           <Link
@@ -292,8 +304,41 @@ export default function ExerciseDetailPage() {
                   <span className="text-amber-800">Generating tips...</span>
                 </div>
               ) : (
-                <div className="prose prose-sm max-w-none text-amber-900">
-                  <div className="whitespace-pre-wrap leading-relaxed">{aiTips}</div>
+                <div className="text-amber-900">
+                  {aiTips?.split('\n').map((line, index) => {
+                    const trimmedLine = line.trim();
+                    
+                    // Skip empty lines
+                    if (!trimmedLine) return null;
+                    
+                    // Handle bullet points (lines starting with *)
+                    if (trimmedLine.startsWith('*')) {
+                      const content = trimmedLine.replace(/^\*\s+/, '');
+                      // Convert **text** to bold
+                      const parts = content.split(/(\*\*.*?\*\*)/g);
+                      
+                      return (
+                        <div key={index} className="mb-3 flex gap-3">
+                          <span className="text-amber-600 flex-shrink-0">•</span>
+                          <span className="leading-relaxed">
+                            {parts.map((part, i) => {
+                              if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={i}>{part.slice(2, -2)}</strong>;
+                              }
+                              return <span key={i}>{part}</span>;
+                            })}
+                          </span>
+                        </div>
+                      );
+                    }
+                    
+                    // Regular paragraph
+                    return (
+                      <p key={index} className="mb-3 leading-relaxed">
+                        {trimmedLine}
+                      </p>
+                    );
+                  })}
                 </div>
               )}
             </div>

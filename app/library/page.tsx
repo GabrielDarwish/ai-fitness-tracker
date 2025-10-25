@@ -179,7 +179,13 @@ export default function LibraryPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="max-w-md text-center">
-          <div className="mb-4 text-6xl animate-pulse">💪</div>
+          <div className="mb-6 flex justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Loading" 
+              className="h-40 w-40 animate-pulse"
+            />
+          </div>
           <h2 className="mb-2 text-2xl font-bold text-slate-900">
             {isSyncing ? "Loading Exercise Library..." : "Loading..."}
           </h2>
@@ -211,7 +217,13 @@ export default function LibraryPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="max-w-md text-center">
-          <div className="mb-4 text-6xl">⚠️</div>
+          <div className="mb-6 flex justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Error" 
+              className="h-40 w-40 opacity-50"
+            />
+          </div>
           <h2 className="mb-2 text-2xl font-bold text-slate-900">Setup Required</h2>
           <p className="mb-6 text-slate-600">{syncError}</p>
           {syncError.includes("API key") && (
@@ -317,7 +329,13 @@ export default function LibraryPage() {
           </div>
         ) : displayExercises.length === 0 ? (
           <div className="flex min-h-[400px] flex-col items-center justify-center text-center">
-            <div className="mb-4 text-6xl">🔍</div>
+            <div className="mb-6 flex justify-center">
+              <img 
+                src="/logo.png" 
+                alt="No results" 
+                className="h-40 w-40 opacity-30"
+              />
+            </div>
             <h3 className="mb-2 text-xl font-bold text-slate-900">
               {activeTab === "saved" ? "No saved exercises yet" : "No exercises found"}
             </h3>

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Exercise {
   id: string;
@@ -184,10 +185,13 @@ export default function ExerciseDetailPage() {
             <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
               <div className="relative aspect-square w-full bg-slate-100">
                 {exercise.gifUrl ? (
-                  <img
+                  <Image
                     src={exercise.gifUrl}
                     alt={exercise.name}
-                    className="h-full w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
+                    priority
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-6xl text-slate-400">

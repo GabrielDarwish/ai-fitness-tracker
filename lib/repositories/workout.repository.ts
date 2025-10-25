@@ -132,6 +132,8 @@ export class WorkoutRepository {
         ...log,
         exercises: loggedExercises,
       };
+    }, {
+      timeout: 15000, // 15 seconds timeout
     });
   }
 
@@ -209,7 +211,7 @@ export class WorkoutRepository {
   }
 
   /**
-   * Get workout stats for user
+   * Get workout stats for user - OPTIMIZED: only fetch required fields
    */
   async getStatsByUserId(userId: string): Promise<{
     totalWorkouts: number;
@@ -220,10 +222,15 @@ export class WorkoutRepository {
       prisma.workoutLog.count({ where: { userId } }),
       prisma.workoutLog.findMany({
         where: { userId },
-        include: {
+        select: {
+          duration: true,
           exercises: {
-            include: {
-              sets: true,
+            select: {
+              sets: {
+                select: {
+                  id: true, // Only need count
+                },
+              },
             },
           },
         },

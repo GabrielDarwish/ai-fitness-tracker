@@ -72,7 +72,8 @@ export class ExerciseRepository {
   }
 
   /**
-   * Find exercises by equipment
+   * Find exercises by equipment - OPTIMIZED: for AI workout generation
+   * Returns only essential fields needed for workout creation
    */
   async findByEquipment(
     equipment: string[],
@@ -81,6 +82,18 @@ export class ExerciseRepository {
     return prisma.exercise.findMany({
       where: {
         equipment: { in: equipment },
+      },
+      select: {
+        id: true,
+        apiId: true,
+        name: true,
+        bodyPart: true,
+        equipment: true,
+        target: true,
+        gifUrl: true,
+        instructions: true,
+        createdAt: true,
+        updatedAt: true,
       },
       take: limit,
     });
@@ -120,7 +133,7 @@ export class ExerciseRepository {
   }
 
   /**
-   * Check if exercise is saved by user
+   * Check if exercise is saved by user - OPTIMIZED: only check existence
    */
   async isSavedByUser(userId: string, exerciseId: string): Promise<boolean> {
     const saved = await prisma.savedExercise.findUnique({
@@ -129,6 +142,9 @@ export class ExerciseRepository {
           userId,
           exerciseId,
         },
+      },
+      select: {
+        id: true, // Only need to know if it exists
       },
     });
 

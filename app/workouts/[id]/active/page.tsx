@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
+import LoadingLogo from "@/components/ui/loading-logo";
 
 interface LoggedSet {
   id: string;
@@ -213,9 +214,7 @@ export default function ActiveWorkoutPage({
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <img src="/logo.png" alt="Loading" className="h-40 w-40 animate-pulse" />
-          </div>
+          <LoadingLogo />
           <p className="text-slate-600">Starting workout...</p>
         </div>
       </div>
@@ -238,14 +237,14 @@ export default function ActiveWorkoutPage({
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="container mx-auto px-4 py-8">
         {/* Header with Timer */}
-        <div className="mb-8 rounded-2xl border border-slate-200 bg-gradient-to-r from-green-50 to-blue-50 p-6 shadow-xl">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="mb-8 rounded-2xl border border-slate-200 bg-gradient-to-r from-green-50 to-blue-50 p-4 md:p-6 shadow-xl">
+          <div className="mb-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-slate-900">{template.name}</h1>
+              <h1 className="mb-2 text-2xl md:text-3xl font-bold text-slate-900">{template.name}</h1>
               <p className="text-slate-600">Active Workout Session</p>
             </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600">{formatTime(elapsedSeconds)}</div>
+            <div className="text-center w-full md:w-auto">
+              <div className="text-3xl md:text-4xl font-bold text-blue-600">{formatTime(elapsedSeconds)}</div>
               <p className="text-sm text-slate-600">Elapsed Time</p>
             </div>
           </div>
@@ -264,7 +263,7 @@ export default function ActiveWorkoutPage({
             </div>
           </div>
 
-          <div className="flex gap-2 text-sm">
+          <div className="flex flex-wrap gap-2 text-sm">
             <span className="rounded-full bg-white px-3 py-1 font-medium text-slate-700">
               📋 {workoutLog.exercises.length} exercises
             </span>
@@ -291,7 +290,7 @@ export default function ActiveWorkoutPage({
                 }`}
               >
                 {/* Exercise Header */}
-                <div className="mb-4 flex items-start justify-between">
+                <div className="mb-4 flex flex-col sm:flex-row items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold ${
                       isActive ? "bg-blue-500 text-white" : "bg-slate-200 text-slate-600"
@@ -344,13 +343,13 @@ export default function ActiveWorkoutPage({
                     <p className="mb-3 text-sm font-medium text-slate-700">
                       Log Set {loggedEx.sets.length + 1}
                     </p>
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <input
                         type="number"
                         placeholder="Reps"
                         value={inputs.reps}
                         onChange={(e) => updateSetInput(loggedEx.id, "reps", e.target.value)}
-                        className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="w-full sm:w-24 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
                       <input
                         type="number"
@@ -358,12 +357,12 @@ export default function ActiveWorkoutPage({
                         placeholder="Weight (kg)"
                         value={inputs.weight}
                         onChange={(e) => updateSetInput(loggedEx.id, "weight", e.target.value)}
-                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
                       <button
                         onClick={() => handleAddSet(loggedEx.id)}
                         disabled={addSetMutation.isPending}
-                        className="rounded-lg bg-green-500 px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-green-600 disabled:opacity-50"
+                        className="w-full sm:w-auto rounded-lg bg-green-500 px-6 py-2 text-sm font-semibold text-white transition-all hover:bg-green-600 disabled:opacity-50"
                       >
                         + Add Set
                       </button>
@@ -376,7 +375,7 @@ export default function ActiveWorkoutPage({
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4">
           <Link
             href="/workouts"
             className="flex-1 rounded-lg border-2 border-slate-200 bg-white px-6 py-4 text-center text-sm font-semibold text-slate-700 shadow-sm transition-all hover:bg-slate-50"
@@ -384,11 +383,7 @@ export default function ActiveWorkoutPage({
             ⏸️ Pause & Save
           </Link>
           <button
-            onClick={() => {
-              if (confirm("Are you sure you want to finish this workout?")) {
-                completeWorkoutMutation.mutate();
-              }
-            }}
+            onClick={() => completeWorkoutMutation.mutate()}
             disabled={completeWorkoutMutation.isPending}
             className="flex-1 rounded-lg bg-green-500 px-6 py-4 text-center text-sm font-semibold text-white shadow-lg transition-all hover:bg-green-600 disabled:opacity-50"
           >

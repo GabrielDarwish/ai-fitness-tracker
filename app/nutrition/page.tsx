@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ui/toast";
 import { LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import LoadingLogo from "@/components/ui/loading-logo";
 
 export default function NutritionPage() {
   const { data: session, status } = useSession();
@@ -99,9 +100,7 @@ export default function NutritionPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <img src="/logo.png" alt="Loading" className="h-40 w-40 animate-pulse" />
-          </div>
+          <LoadingLogo />
           <p className="text-slate-600">Loading nutrition...</p>
         </div>
       </div>

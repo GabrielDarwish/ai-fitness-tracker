@@ -1,6 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'v2.exercisedb.io',
+        pathname: '/image/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.exercisedb.io',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

@@ -5,6 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { 
+  Calendar as CalendarIcon, 
+  ChevronLeft, 
+  ChevronRight, 
+  ArrowLeft,
+  CheckCircle,
+  Dumbbell
+} from "lucide-react";
+import LoadingLogo from "@/components/ui/loading-logo";
 
 interface WorkoutSummary {
   id: string;
@@ -123,9 +132,7 @@ export default function CalendarPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <img src="/logo.png" alt="Loading" className="h-40 w-40 animate-pulse" />
-          </div>
+          <LoadingLogo />
           <p className="text-slate-600">Loading calendar...</p>
         </div>
       </div>
@@ -141,46 +148,67 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="mb-2 text-4xl font-bold text-slate-900">Workout Calendar</h1>
-            <p className="text-slate-600">Track your training consistency</p>
+        <div className="mb-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center animate-slide-up">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/30">
+              <CalendarIcon className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <h1 className="mb-1 text-display">Workout Calendar</h1>
+              <p className="text-lg text-slate-600">Track your training consistency</p>
+            </div>
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50"
+            className="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300"
           >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Dashboard
           </Link>
         </div>
 
         {/* Weekly Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-4 shadow-sm">
-            <div className="mb-1 text-sm font-medium text-green-700">Workouts</div>
-            <div className="text-3xl font-bold text-green-900">{weeklyStats.totalWorkouts}</div>
-            <div className="mt-1 text-xs text-green-600">This week</div>
+          <div className="group relative animate-scale-in delay-100">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 opacity-20 blur-sm" />
+            <div className="relative rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-5 shadow-lg transition-all duration-300 hover:shadow-xl">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-green-700">
+                <CheckCircle className="h-4 w-4" />
+                Workouts
+              </div>
+              <div className="text-3xl font-bold text-green-900">{weeklyStats.totalWorkouts}</div>
+              <div className="mt-1 text-xs text-green-600">This week</div>
+            </div>
           </div>
-          <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 shadow-sm">
-            <div className="mb-1 text-sm font-medium text-blue-700">Total Sets</div>
-            <div className="text-3xl font-bold text-blue-900">{weeklyStats.totalSets}</div>
-            <div className="mt-1 text-xs text-blue-600">Completed</div>
+          <div className="group relative animate-scale-in delay-200">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 opacity-20 blur-sm" />
+            <div className="relative rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-5 shadow-lg transition-all duration-300 hover:shadow-xl">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-blue-700">
+                <Dumbbell className="h-4 w-4" />
+                Total Sets
+              </div>
+              <div className="text-3xl font-bold text-blue-900">{weeklyStats.totalSets}</div>
+              <div className="mt-1 text-xs text-blue-600">Completed</div>
+            </div>
           </div>
-          <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 shadow-sm">
-            <div className="mb-1 text-sm font-medium text-purple-700">Volume</div>
-            <div className="text-3xl font-bold text-purple-900">{weeklyStats.totalVolume.toLocaleString()}</div>
-            <div className="mt-1 text-xs text-purple-600">kg lifted</div>
+          <div className="group relative animate-scale-in delay-300">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 opacity-20 blur-sm" />
+            <div className="relative rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-5 shadow-lg transition-all duration-300 hover:shadow-xl">
+              <div className="mb-2 text-sm font-semibold text-purple-700">Volume</div>
+              <div className="text-3xl font-bold text-purple-900">{weeklyStats.totalVolume.toLocaleString()}</div>
+              <div className="mt-1 text-xs text-purple-600">kg lifted</div>
+            </div>
           </div>
-          <div className="rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 shadow-sm">
-            <div className="mb-1 text-sm font-medium text-amber-700">Time</div>
-            <div className="text-3xl font-bold text-amber-900">{weeklyStats.totalMinutes}</div>
-            <div className="mt-1 text-xs text-amber-600">minutes</div>
+          <div className="group relative animate-scale-in delay-400">
+            <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 opacity-20 blur-sm" />
+            <div className="relative rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-5 shadow-lg transition-all duration-300 hover:shadow-xl">
+              <div className="mb-2 text-sm font-semibold text-amber-700">Time</div>
+              <div className="text-3xl font-bold text-amber-900">{weeklyStats.totalMinutes}</div>
+              <div className="mt-1 text-xs text-amber-600">minutes</div>
+            </div>
           </div>
         </div>
 

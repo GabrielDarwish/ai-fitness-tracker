@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import LoadingLogo from "@/components/ui/loading-logo";
 
 export default function ProgressPage() {
   const { data: session, status } = useSession();
@@ -54,9 +55,7 @@ export default function ProgressPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <img src="/logo.png" alt="Loading" className="h-40 w-40 animate-pulse" />
-          </div>
+          <LoadingLogo />
           <p className="text-slate-600">Loading progress...</p>
         </div>
       </div>
@@ -144,12 +143,10 @@ export default function ProgressPage() {
             </div>
 
             <div className="space-y-4">
-              {aiInsights.insights.map((insight: string, idx: number) => (
-                <div key={idx} className="flex items-start gap-3 rounded-lg border border-amber-200 bg-white p-4">
-                  <div className="mt-1 text-xl">💡</div>
-                  <p className="flex-1 text-slate-700">{insight}</p>
-                </div>
-              ))}
+              <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-white p-4">
+                <div className="mt-1 text-xl">💡</div>
+                <p className="flex-1 text-slate-700">{aiInsights.insights}</p>
+              </div>
             </div>
           </div>
         )}

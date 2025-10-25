@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect } from "react";
+import LoadingLogo from "@/components/ui/loading-logo";
 
 export default function WorkoutSummaryPage({
   params,
@@ -35,9 +36,7 @@ export default function WorkoutSummaryPage({
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center">
-          <div className="mb-6 flex justify-center">
-            <img src="/logo.png" alt="Loading" className="h-40 w-40 animate-pulse" />
-          </div>
+          <LoadingLogo />
           <p className="text-slate-600">Loading workout...</p>
         </div>
       </div>

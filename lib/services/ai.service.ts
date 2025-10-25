@@ -5,8 +5,15 @@
 
 import { exerciseRepository, workoutRepository, nutritionRepository, progressRepository } from "../repositories";
 import { GenerateWorkoutRequest, GeneratedExercise } from "@/types/api";
-import { cleanMarkdownCodeBlock } from "../utils";
 import { AppError } from "../utils/errors";
+
+// Helper function to clean markdown code blocks from AI responses
+function cleanMarkdownCodeBlock(text: string): string {
+  return text
+    .replace(/```json\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim();
+}
 
 export class AIService {
   private apiKey: string;

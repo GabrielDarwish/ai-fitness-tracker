@@ -2,6 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function SignInPage() {
@@ -159,9 +160,17 @@ export default function SignInPage() {
         </div>
 
         {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-500">
-          By continuing, you agree to our Terms and Privacy Policy
-        </p>
+        <div className="mt-6 space-y-3">
+          <Link 
+            href="/"
+            className="block text-center text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            ← Back to Home
+          </Link>
+          <p className="text-center text-xs text-slate-500">
+            By continuing, you agree to our Terms and Privacy Policy
+          </p>
+        </div>
       </div>
     </div>
   );

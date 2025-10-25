@@ -11,14 +11,14 @@ import { parseRequestBody, validateRequiredFields } from "@/lib/utils/validation
 import { AddSetRequest } from "@/types/api";
 
 export const POST = asyncHandler(
-  async (req: Request, { params }: { params: { id: string } }) => {
+  async (req: Request, context: { params: { id: string } }) => {
     const user = await getCurrentUserProfile();
     const body = await parseRequestBody<AddSetRequest>(req);
 
     validateRequiredFields(body, ["loggedExerciseId", "reps"]);
 
     // Verify workout log belongs to user
-    await workoutService.getWorkoutLog(params.id, user.id);
+    await workoutService.getWorkoutLog(context.params.id, user.id);
 
     // Add set
     const result = await workoutService.addSet(body);

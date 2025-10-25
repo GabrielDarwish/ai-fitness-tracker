@@ -12,21 +12,21 @@ import { parseRequestBody } from "@/lib/utils/validation";
 import { UpdateWorkoutLogRequest } from "@/types/api";
 
 export const GET = asyncHandler(
-  async (req: Request, { params }: { params: { id: string } }) => {
+  async (req: Request, context: { params: { id: string } }) => {
     const user = await getCurrentUserProfile();
-    const workoutLog = await workoutService.getWorkoutLog(params.id, user.id);
+    const workoutLog = await workoutService.getWorkoutLog(context.params.id, user.id);
 
     return createSuccessResponse({ workoutLog });
   }
 );
 
 export const PATCH = asyncHandler(
-  async (req: Request, { params }: { params: { id: string } }) => {
+  async (req: Request, context: { params: { id: string } }) => {
     const user = await getCurrentUserProfile();
     const body = await parseRequestBody<UpdateWorkoutLogRequest>(req);
 
     const result = await workoutService.updateWorkoutLog(
-      params.id,
+      context.params.id,
       user.id,
       body
     );

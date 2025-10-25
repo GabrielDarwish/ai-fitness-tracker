@@ -6,10 +6,10 @@ import { NextResponse } from "next/server";
  */
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const exerciseId = params.id;
+    const exerciseId = context.params.id;
     const EXERCISEDB_API_KEY = process.env.EXERCISEDB_API_KEY;
 
     if (!EXERCISEDB_API_KEY) {

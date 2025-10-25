@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToggleSaveExercise } from "@/hooks/useExercises";
@@ -31,7 +31,8 @@ interface ExercisesResponse {
 export default function LibraryPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { toggleSave, isLoading: isSavingExercise } = useToggleSaveExercise();
+  const queryClient = useQueryClient();
+  const { toggleSave } = useToggleSaveExercise();
 
   const [activeTab, setActiveTab] = useState<"all" | "saved">("all");
   const [filters, setFilters] = useState({
@@ -318,7 +319,6 @@ export default function LibraryPage() {
                   exercise={exercise}
                   isSaved={savedExerciseIds.has(exercise.id)}
                   onToggleSave={toggleSave}
-                  isLoading={isSavingExercise}
                 />
               ))}
             </div>

@@ -15,14 +15,12 @@ interface ExerciseCardProps {
   };
   isSaved: boolean;
   onToggleSave: (exerciseId: string, currentlySaved: boolean) => void;
-  isLoading?: boolean;
 }
 
 export default function ExerciseCard({
   exercise,
   isSaved,
   onToggleSave,
-  isLoading = false,
 }: ExerciseCardProps) {
   const handleToggleSave = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent link navigation
@@ -65,48 +63,23 @@ export default function ExerciseCard({
           {/* Floating save button */}
           <button
             onClick={handleToggleSave}
-            disabled={isLoading}
             className={`
               absolute right-3 top-3 z-10
               flex h-11 w-11 items-center justify-center
               rounded-full backdrop-blur-sm
               shadow-lg
-              transition-all duration-300
+              transition-all duration-200
               hover:scale-110 active:scale-95
               ${isSaved
                 ? "bg-red-500 text-white hover:bg-red-600"
                 : "bg-white/90 text-slate-600 hover:bg-white hover:text-red-500"
               }
-              ${isLoading ? "cursor-not-allowed opacity-50" : ""}
             `}
             aria-label={isSaved ? "Unsave exercise" : "Save exercise"}
           >
-            {isLoading ? (
-              <svg
-                className="h-5 w-5 animate-spin"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-            ) : (
-              <Heart 
-                className={`h-5 w-5 transition-all ${isSaved ? "fill-white" : ""}`} 
-              />
-            )}
+            <Heart 
+              className={`h-5 w-5 transition-all duration-200 ${isSaved ? "fill-white" : ""}`} 
+            />
           </button>
         </div>
 

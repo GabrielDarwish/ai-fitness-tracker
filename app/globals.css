@@ -56,6 +56,15 @@ body {
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes scaleIn {
   from {
     opacity: 0;
@@ -122,6 +131,10 @@ body {
 /* Animation classes */
 .animate-slide-up {
   animation: slideUpFade 0.5s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
 }
 
 .animate-scale-in {

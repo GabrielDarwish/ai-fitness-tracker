@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { 
   Target, 
   Dumbbell, 
@@ -48,6 +49,11 @@ export default function MyWorkoutsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [workoutToDelete, setWorkoutToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -274,9 +280,18 @@ export default function MyWorkoutsPage() {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteModalOpen && workoutToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in">
+      {isMounted && deleteModalOpen && workoutToDelete && createPortal(
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+          onClick={() => {
+            setDeleteModalOpen(false);
+            setWorkoutToDelete(null);
+          }}
+        >
+          <div 
+            className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal Header */}
             <div className="mb-4">
               <div className="flex items-center justify-center w-14 h-14 mx-auto mb-4 rounded-full bg-red-100">
@@ -315,7 +330,8 @@ export default function MyWorkoutsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

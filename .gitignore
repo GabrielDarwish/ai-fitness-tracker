@@ -47,3 +47,6 @@ node_modules/.prisma/
 
 # cursor
 .cursor/
+DESIGN_SYSTEM.md
+GITHUB_OAUTH_SETUP.md
+README.md

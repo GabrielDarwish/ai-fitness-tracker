@@ -1,94 +1,122 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { prisma } from "@/lib/db";
+import Link from "next/link";
+import LogoutButton from "./components/LogoutButton";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session?.user?.email) {
     redirect("/auth/signin");
   }
 
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      name: true,
+      goals: true,
+      equipment: true,
+    },
+  });
+
+  if (!user?.goals) {
+    redirect("/onboarding");
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      <nav className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                AI Fitness Tracker
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {session.user?.name || session.user?.email}
-              </span>
-              <form action="/api/auth/signout" method="POST">
-                <button
-                  type="submit"
-                  className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-                >
-                  Sign Out
-                </button>
-              </form>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header with Logout */}
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="mb-2 text-4xl font-bold text-slate-900">
+              Welcome back, {user.name}! 👋
+            </h1>
+            <p className="text-slate-600">
+              Your fitness journey starts here
+            </p>
           </div>
+          <LogoutButton />
         </div>
-      </nav>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <header className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">
-            Welcome back, {session.user?.name?.split(" ")[0] || "there"}!
-          </h2>
-          <p className="mt-2 text-gray-600">
-            Your AI-powered fitness dashboard
-          </p>
-        </header>
-
+        {/* Feature Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">Workouts</h3>
-              <span className="text-2xl">💪</span>
+          {/* Exercise Library Card - Active */}
+          <Link
+            href="/library"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 hover:border-blue-300 hover:shadow-2xl"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-2xl transition-colors group-hover:bg-blue-200">
+                📚
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Exercise Library</h2>
             </div>
-            <p className="text-gray-600">No workouts logged yet</p>
-            <button className="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600">
-              Log Workout
-            </button>
+            <p className="text-slate-600">Browse and save exercises</p>
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-blue-600">
+              Explore now
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+          {/* Workouts Card - Coming Soon */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
+                💪
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Workouts</h2>
+            </div>
+            <p className="text-slate-600">Track and log your exercises</p>
+            <div className="mt-4 text-sm text-slate-500">Coming soon...</div>
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">Progress</h3>
-              <span className="text-2xl">📊</span>
+          {/* Nutrition Card - Coming Soon */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl">
+                🥗
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Nutrition</h2>
             </div>
-            <p className="text-gray-600">Track your progress over time</p>
-            <button className="mt-4 rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600">
-              View Progress
-            </button>
+            <p className="text-slate-600">Monitor your daily intake</p>
+            <div className="mt-4 text-sm text-slate-500">Coming soon...</div>
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow-lg">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">Nutrition</h3>
-              <span className="text-2xl">🥗</span>
+          {/* Progress Card - Coming Soon */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-2xl">
+                📊
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Progress</h2>
             </div>
-            <p className="text-gray-600">No meals logged today</p>
-            <button className="mt-4 rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600">
-              Log Meal
-            </button>
+            <p className="text-slate-600">View your achievements</p>
+            <div className="mt-4 text-sm text-slate-500">Coming soon...</div>
           </div>
         </div>
 
-        <div className="mt-8 rounded-xl bg-white p-6 shadow-lg">
-          <h3 className="mb-4 text-xl font-bold text-gray-900">
-            Recent Activity
-          </h3>
-          <p className="text-gray-500">No activity yet. Start by logging your first workout!</p>
+        {/* User Info Card */}
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+          <h3 className="mb-4 text-lg font-bold text-slate-900">Your Profile</h3>
+          <div className="space-y-2 text-sm">
+            <p className="text-slate-600">
+              <span className="font-medium text-slate-900">Goal:</span>{" "}
+              {user.goals?.replace("-", " ")}
+            </p>
+            <p className="text-slate-600">
+              <span className="font-medium text-slate-900">Equipment:</span>{" "}
+              {user.equipment && user.equipment.length > 0
+                ? user.equipment.join(", ")
+                : "None"}
+            </p>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

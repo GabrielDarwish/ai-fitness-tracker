@@ -20,6 +20,6 @@ export const DELETE = asyncHandler(
     await workoutService.deleteTemplate(templateId, user.id);
 
     // Return 204 No Content for successful deletion
-    return new Response(null, { status: 204 });
+    return new NextResponse(null, { status: 204 });
   }
 );

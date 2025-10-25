@@ -81,7 +81,7 @@ export default function Step1Profile({
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: ValidationErrors = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const field = err.path[0] as string;
           newErrors[field as keyof ValidationErrors] = err.message;
         });

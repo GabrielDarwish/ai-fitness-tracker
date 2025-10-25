@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ui/toast";
 
 interface GeneratedExercise {
   exerciseId: string;
@@ -26,6 +27,7 @@ export default function AIWorkoutBuilderPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const [formData, setFormData] = useState({
     goal: "",
@@ -123,8 +125,13 @@ export default function AIWorkoutBuilderPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workout-templates"] });
-      alert("Workout saved successfully!");
-      // Could redirect to /workouts or show success message
+      showToast("Workout saved successfully! 🎉", "success");
+      setTimeout(() => {
+        router.push("/workouts");
+      }, 1000);
+    },
+    onError: (error: any) => {
+      showToast(error.message || "Failed to save workout", "error");
     },
   });
 

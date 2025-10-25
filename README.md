@@ -31,12 +31,47 @@ An AI-powered full-stack fitness tracking application built with Next.js 14, Sup
    - Structured workout plans (sets, reps, rest time)
    - Save workouts as templates
 
+5. **💪 My Workouts**
+   - View all saved workout templates
+   - Start live workout sessions
+   - Edit and delete templates
+   - Expandable exercise details
+
+6. **📝 Active Workout Logging**
+   - Live workout sessions with timer
+   - Progress bar for workout completion
+   - Log sets, reps, and weight for each exercise
+   - Automatic workout summary and statistics
+   - Save completed workouts to history
+
+7. **📅 Calendar View**
+   - Weekly schedule with workout cards
+   - Navigation by week
+   - Visual consistency tracking
+   - Weekly stats (workouts, sets, volume, time)
+   - Click cards for detailed summaries
+
+8. **🍽️ Nutrition Tracking**
+   - AI-powered food recognition (Nutritionix API)
+   - Natural language meal logging
+   - Automatic macro calculation
+   - Daily and weekly nutrition stats
+   - Recent log history
+   - Today's nutrition summary
+
+9. **📊 Progress Dashboard**
+   - Interactive charts (Recharts)
+   - Training volume over time
+   - Workout frequency analysis
+   - Calorie and protein intake trends
+   - Macro distribution pie chart
+   - 30-day stats and consistency tracking
+
 ### 🚧 Coming Soon
 
-- **💪 My Workouts** - Manage saved workout templates
-- **📝 Workout Logging** - Track your workout sessions
-- **🥗 Nutrition Tracking** - Log meals with AI-powered food recognition
-- **📊 Progress Analytics** - Visualize your fitness journey
+- **🏆 Achievements** - Unlock badges and milestones
+- **📈 Body Measurements** - Track weight, measurements, and photos
+- **🔔 Notifications** - Workout reminders and streak alerts
 
 ## 🚀 Tech Stack
 
@@ -67,20 +102,54 @@ ai-fitness-tracker/
 │   │   └── signin/page.tsx
 │   ├── api/
 │   │   ├── auth/[...nextauth]/route.ts
-│   │   ├── ai/route.ts
-│   │   ├── exercises/route.ts
-│   │   └── nutrition/route.ts
+│   │   ├── ai/
+│   │   │   ├── generate-workout/route.ts
+│   │   │   ├── form-tips/route.ts
+│   │   │   ├── insights/route.ts
+│   │   │   └── progress-insights/route.ts
+│   │   ├── exercises/
+│   │   │   ├── route.ts
+│   │   │   ├── sync/route.ts
+│   │   │   └── favorites/route.ts
+│   │   ├── nutrition/
+│   │   │   ├── analyze/route.ts
+│   │   │   └── logs/route.ts
+│   │   ├── workout-templates/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/route.ts
+│   │   ├── workout-logs/
+│   │   │   ├── route.ts
+│   │   │   ├── [id]/route.ts
+│   │   │   ├── [id]/sets/route.ts
+│   │   │   └── history/route.ts
+│   │   └── user/route.ts
 │   ├── dashboard/page.tsx
+│   ├── library/
+│   │   ├── page.tsx
+│   │   └── [id]/page.tsx
+│   ├── ai-builder/page.tsx
+│   ├── workouts/
+│   │   ├── page.tsx
+│   │   ├── [id]/active/page.tsx
+│   │   └── summary/[id]/page.tsx
+│   ├── calendar/page.tsx
+│   ├── nutrition/page.tsx
+│   ├── progress/page.tsx
+│   ├── onboarding/page.tsx
 │   ├── layout.tsx
 │   ├── page.tsx
 │   └── providers.tsx
 ├── lib/
 │   ├── db.ts
-│   └── auth.ts
+│   ├── prisma.ts
+│   ├── auth.ts
+│   └── validations/
 ├── prisma/
 │   └── schema.prisma
-└── components/
-    └── ui/
+├── components/
+│   └── ui/
+└── scripts/
+    └── reset-db.mjs
 ```
 
 ## ⚙️ Setup Instructions

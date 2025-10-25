@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import LogoutButton from "./components/LogoutButton";
+import ProfileCard from "./components/ProfileCard";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -83,59 +84,89 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          {/* Workouts Card - Coming Soon */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
+          {/* My Workouts Card - Active */}
+          <Link
+            href="/workouts"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 hover:border-green-300 hover:shadow-2xl"
+          >
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl transition-colors group-hover:bg-green-200">
                 💪
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Workouts</h2>
+              <h2 className="text-xl font-bold text-slate-900">My Workouts</h2>
             </div>
-            <p className="text-slate-600">Track and log your exercises</p>
-            <div className="mt-4 text-sm text-slate-500">Coming soon...</div>
-          </div>
+            <p className="text-slate-600">View and start your workout templates</p>
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-green-600">
+              Manage workouts
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
 
-          {/* Nutrition Card - Coming Soon */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
+          {/* Calendar Card - Active */}
+          <Link
+            href="/calendar"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 hover:border-purple-300 hover:shadow-2xl"
+          >
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl">
-                🥗
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-2xl transition-colors group-hover:bg-purple-200">
+                📅
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Nutrition</h2>
+              <h2 className="text-xl font-bold text-slate-900">Calendar</h2>
             </div>
-            <p className="text-slate-600">Monitor your daily intake</p>
-            <div className="mt-4 text-sm text-slate-500">Coming soon...</div>
-          </div>
+            <p className="text-slate-600">Track your training schedule</p>
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-purple-600">
+              View calendar
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
 
-          {/* Progress Card - Coming Soon */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl opacity-60">
+          {/* Nutrition Tracker Card - Active */}
+          <Link
+            href="/nutrition"
+            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-xl transition-all duration-200 hover:border-amber-300 hover:shadow-2xl"
+          >
             <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-2xl">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl transition-colors group-hover:bg-amber-200">
+                🍽️
+              </div>
+              <h2 className="text-xl font-bold text-slate-900">Nutrition Tracker</h2>
+            </div>
+            <p className="text-slate-600">Log meals with natural language</p>
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-amber-600">
+              Log food
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
+
+          {/* Progress Dashboard Card - Active */}
+          <Link
+            href="/progress"
+            className="group rounded-2xl border border-slate-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-6 shadow-xl transition-all duration-200 hover:border-blue-300 hover:shadow-2xl"
+          >
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-2xl shadow-lg transition-transform group-hover:scale-110">
                 📊
               </div>
-              <h2 className="text-xl font-bold text-slate-900">Progress</h2>
+              <h2 className="text-xl font-bold text-slate-900">Progress Dashboard</h2>
             </div>
-            <p className="text-slate-600">View your achievements</p>
-            <div className="mt-4 text-sm text-slate-500">Coming soon...</div>
-          </div>
+            <p className="text-slate-600">Charts, stats & AI insights</p>
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-blue-600">
+              View analytics
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </Link>
         </div>
 
         {/* User Info Card */}
-        <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-          <h3 className="mb-4 text-lg font-bold text-slate-900">Your Profile</h3>
-          <div className="space-y-2 text-sm">
-            <p className="text-slate-600">
-              <span className="font-medium text-slate-900">Goal:</span>{" "}
-              {user.goals?.replace("-", " ")}
-            </p>
-            <p className="text-slate-600">
-              <span className="font-medium text-slate-900">Equipment:</span>{" "}
-              {user.equipment && user.equipment.length > 0
-                ? user.equipment.join(", ")
-                : "None"}
-            </p>
-          </div>
-        </div>
+        <ProfileCard goals={user.goals || ""} equipment={user.equipment || []} />
       </div>
     </div>
   );

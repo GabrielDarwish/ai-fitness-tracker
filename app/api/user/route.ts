@@ -32,7 +32,7 @@ export async function POST(req: Request) {
         return NextResponse.json(
           { 
             error: "Validation failed",
-            details: validationError.errors.map(e => e.message).join(", ")
+            details: validationError.issues.map((e: z.ZodIssue) => e.message).join(", ")
           },
           { status: 400 }
         );
@@ -58,6 +58,58 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error updating user profile:", error);
     console.error("Error details:", JSON.stringify(error, null, 2));
+    return NextResponse.json(
+      { 
+        error: "Failed to update profile",
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const data = await req.json();
+
+    // Update only the provided fields
+    const updateData: any = {};
+    
+    if (data.goals !== undefined) {
+      updateData.goals = data.goals;
+    }
+    
+    if (data.equipment !== undefined) {
+      if (!Array.isArray(data.equipment)) {
+        return NextResponse.json(
+          { error: "Equipment must be an array" },
+          { status: 400 }
+        );
+      }
+      updateData.equipment = data.equipment;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 }
+      );
+    }
+
+    const user = await prisma.user.update({
+      where: { email: session.user.email },
+      data: updateData,
+    });
+
+    return NextResponse.json({ success: true, user }, { status: 200 });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
     return NextResponse.json(
       { 
         error: "Failed to update profile",

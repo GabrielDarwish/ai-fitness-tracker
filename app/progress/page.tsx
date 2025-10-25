@@ -117,7 +117,7 @@ export default function ProgressPage() {
           <div className="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-6 shadow-lg">
             <div className="mb-2 text-sm font-medium text-green-700">Total Volume</div>
             <div className="text-4xl font-bold text-green-900">{totalVolume.toLocaleString()}</div>
-            <div className="mt-2 text-xs text-green-600">lbs lifted</div>
+            <div className="mt-2 text-xs text-green-600">kgs lifted</div>
           </div>
           <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 shadow-lg">
             <div className="mb-2 text-sm font-medium text-purple-700">Total Sets</div>

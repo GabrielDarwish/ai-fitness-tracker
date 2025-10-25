@@ -25,8 +25,8 @@ export const POST = asyncHandler(async (req: Request) => {
   const workout = await aiService.generateWorkout(body);
 
   return createSuccessResponse(
-    {
-      success: true,
+      {
+        success: true,
       workout,
     },
     200

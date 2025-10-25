@@ -42,11 +42,11 @@ export const GET = asyncHandler(async (req: Request) => {
 
   // Process logs to include calculated fields
   const logs = workoutLogs.map((log) => {
-    const totalSets = log.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+    const totalSets = log.exercises.reduce((sum: number, ex) => sum + ex.sets.length, 0);
     const totalVolume = log.exercises.reduce(
-      (sum, ex) =>
+      (sum: number, ex) =>
         sum +
-        ex.sets.reduce((setSum, set) => setSum + (set.weight || 0) * set.reps, 0),
+        ex.sets.reduce((setSum: number, set) => setSum + (set.weight || 0) * set.reps, 0),
       0
     );
 
@@ -62,9 +62,9 @@ export const GET = asyncHandler(async (req: Request) => {
   // Calculate summary stats
   const stats = {
     totalWorkouts: logs.length,
-    totalDuration: logs.reduce((sum, log) => sum + log.duration, 0),
-    totalSets: logs.reduce((sum, log) => sum + log.totalSets, 0),
-    totalVolume: logs.reduce((sum, log) => sum + log.totalVolume, 0),
+    totalDuration: logs.reduce((sum: number, log) => sum + log.duration, 0),
+    totalSets: logs.reduce((sum: number, log) => sum + log.totalSets, 0),
+    totalVolume: logs.reduce((sum: number, log) => sum + log.totalVolume, 0),
     logs, // Include individual logs for charting
   };
 

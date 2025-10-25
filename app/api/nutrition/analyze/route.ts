@@ -115,10 +115,10 @@ Rules:
     }));
 
     const totals = {
-      calories: foods.reduce((sum, f) => sum + f.calories, 0),
-      protein: foods.reduce((sum, f) => sum + f.protein, 0),
-      carbs: foods.reduce((sum, f) => sum + f.carbs, 0),
-      fat: foods.reduce((sum, f) => sum + f.fat, 0),
+      calories: foods.reduce((sum: number, f) => sum + f.calories, 0),
+      protein: foods.reduce((sum: number, f) => sum + f.protein, 0),
+      carbs: foods.reduce((sum: number, f) => sum + f.carbs, 0),
+      fat: foods.reduce((sum: number, f) => sum + f.fat, 0),
     };
 
     return createSuccessResponse({

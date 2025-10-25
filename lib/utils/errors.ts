@@ -117,10 +117,10 @@ export function createSuccessResponse<T>(
  * Async Handler Wrapper
  * Wraps async route handlers to catch errors
  */
-export function asyncHandler(
-  handler: (req: Request, context?: Record<string, unknown>) => Promise<NextResponse>
+export function asyncHandler<T = any>(
+  handler: (req: Request, context?: T) => Promise<NextResponse>
 ) {
-  return async (req: Request, context?: Record<string, unknown>) => {
+  return async (req: Request, context?: T) => {
     try {
       return await handler(req, context);
     } catch (error) {

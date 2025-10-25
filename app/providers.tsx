@@ -39,7 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ToastProvider>{children}</ToastProvider>
         {/* React Query Devtools - only in development */}
         {process.env.NODE_ENV === "development" && (
-          <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+          <ReactQueryDevtools initialIsOpen={false} />
         )}
       </QueryClientProvider>
     </SessionProvider>

@@ -1,123 +1,36 @@
-import { prisma } from "@/lib/db";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+/**
+ * Workout Log [ID] API Routes
+ * GET /api/workout-logs/[id] - Get workout log details
+ * PATCH /api/workout-logs/[id] - Update workout log
+ */
+
 import { NextResponse } from "next/server";
+import { workoutService } from "@/lib/services";
+import { getCurrentUserProfile } from "@/lib/utils/auth";
+import { asyncHandler, createSuccessResponse } from "@/lib/utils/errors";
+import { parseRequestBody } from "@/lib/utils/validation";
+import { UpdateWorkoutLogRequest } from "@/types/api";
 
-/**
- * GET - Get a specific workout log
- */
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const GET = asyncHandler(
+  async (req: Request, { params }: { params: { id: string } }) => {
+    const user = await getCurrentUserProfile();
+    const workoutLog = await workoutService.getWorkoutLog(params.id, user.id);
 
-    const { id } = params;
-
-    // Get user ID
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Fetch workout log with exercises and sets
-    const workoutLog = await prisma.workoutLog.findFirst({
-      where: {
-        id,
-        userId: user.id,
-      },
-      include: {
-        exercises: {
-          include: {
-            exercise: true,
-            sets: {
-              orderBy: { id: "asc" },
-            },
-          },
-          orderBy: { id: "asc" },
-        },
-      },
-    });
-
-    if (!workoutLog) {
-      return NextResponse.json(
-        { error: "Workout log not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ workoutLog }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching workout log:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch workout log" },
-      { status: 500 }
-    );
+    return createSuccessResponse({ workoutLog });
   }
-}
+);
 
-/**
- * PATCH - Update a workout log (mark as completed / add notes)
- */
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const PATCH = asyncHandler(
+  async (req: Request, { params }: { params: { id: string } }) => {
+    const user = await getCurrentUserProfile();
+    const body = await parseRequestBody<UpdateWorkoutLogRequest>(req);
 
-    const { id } = params;
-    const { duration, notes } = await req.json();
-
-    // Get user ID
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Update workout log
-    const workoutLog = await prisma.workoutLog.updateMany({
-      where: {
-        id,
-        userId: user.id,
-      },
-      data: {
-        ...(duration !== undefined && { duration }),
-        ...(notes !== undefined && { notes }),
-      },
-    });
-
-    if (workoutLog.count === 0) {
-      return NextResponse.json(
-        { error: "Workout log not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.error("Error updating workout log:", error);
-    return NextResponse.json(
-      { error: "Failed to update workout log" },
-      { status: 500 }
+    const result = await workoutService.updateWorkoutLog(
+      params.id,
+      user.id,
+      body
     );
-  }
-}
 
+    return createSuccessResponse(result);
+  }
+);

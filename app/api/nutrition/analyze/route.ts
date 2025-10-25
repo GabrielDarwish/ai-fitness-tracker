@@ -1,79 +1,78 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+/**
+ * Nutrition Analyze API Route
+ * POST /api/nutrition/analyze - Analyze food using Nutritionix API
+ */
 
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/utils/auth";
+import { asyncHandler, createSuccessResponse, AppError } from "@/lib/utils/errors";
+import { parseRequestBody, validateRequiredFields } from "@/lib/utils/validation";
 
-    const { query } = await req.json();
+export const POST = asyncHandler(async (req: Request) => {
+  await getCurrentUser();
 
-    if (!query || typeof query !== "string") {
-      return NextResponse.json(
-        { error: "Invalid input", message: "Please provide a food description" },
-        { status: 400 }
-      );
-    }
+  const body = await parseRequestBody<{ query: string }>(req);
+  validateRequiredFields(body, ["query"]);
 
-    // Call Nutritionix API
-    const nutritionixResponse = await fetch(
-      "https://trackapi.nutritionix.com/v2/natural/nutrients",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-app-id": process.env.NUTRITIONIX_APP_ID!,
-          "x-app-key": process.env.NUTRITIONIX_API_KEY!,
-        },
-        body: JSON.stringify({ query }),
-      }
-    );
+  const nutritionixAppId = process.env.NUTRITIONIX_APP_ID;
+  const nutritionixApiKey = process.env.NUTRITIONIX_API_KEY;
 
-    if (!nutritionixResponse.ok) {
-      const errorData = await nutritionixResponse.json();
-      console.error("Nutritionix API error:", errorData);
-      return NextResponse.json(
-        { 
-          error: "Failed to analyze food",
-          message: "Unable to recognize the food. Try being more specific with quantities and names."
-        },
-        { status: 400 }
-      );
-    }
-
-    const data = await nutritionixResponse.json();
-
-    // Parse the response
-    const foods = data.foods.map((food: any) => ({
-      name: food.food_name,
-      calories: Math.round(food.nf_calories),
-      protein: Math.round(food.nf_protein),
-      carbs: Math.round(food.nf_total_carbohydrate),
-      fat: Math.round(food.nf_total_fat),
-      serving: food.serving_unit + " (" + food.serving_weight_grams + "g)",
-    }));
-
-    // Calculate totals
-    const totals = {
-      calories: foods.reduce((sum: number, f: any) => sum + f.calories, 0),
-      protein: foods.reduce((sum: number, f: any) => sum + f.protein, 0),
-      carbs: foods.reduce((sum: number, f: any) => sum + f.carbs, 0),
-      fat: foods.reduce((sum: number, f: any) => sum + f.fat, 0),
-    };
-
-    return NextResponse.json({
-      query,
-      foods,
-      totals,
-    });
-  } catch (error: any) {
-    console.error("Error analyzing food:", error);
-    return NextResponse.json(
-      { error: "Failed to analyze food", message: error.message },
-      { status: 500 }
+  if (!nutritionixAppId || !nutritionixApiKey) {
+    throw new AppError(
+      "Nutritionix API not configured. Please add NUTRITIONIX_APP_ID and NUTRITIONIX_API_KEY to environment variables.",
+      500
     );
   }
-}
+
+  const nutritionixResponse = await fetch(
+    "https://trackapi.nutritionix.com/v2/natural/nutrients",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": nutritionixAppId,
+        "x-app-key": nutritionixApiKey,
+      },
+      body: JSON.stringify({ query: body.query }),
+    }
+  );
+
+  if (!nutritionixResponse.ok) {
+    throw new AppError(
+      "Unable to recognize the food. Try being more specific with quantities and names.",
+      400
+    );
+  }
+
+  const data = await nutritionixResponse.json();
+
+  const foods = data.foods.map((food: {
+    food_name: string;
+    nf_calories: number;
+    nf_protein: number;
+    nf_total_carbohydrate: number;
+    nf_total_fat: number;
+    serving_unit: string;
+    serving_weight_grams: number;
+  }) => ({
+    name: food.food_name,
+    calories: Math.round(food.nf_calories),
+    protein: Math.round(food.nf_protein),
+    carbs: Math.round(food.nf_total_carbohydrate),
+    fat: Math.round(food.nf_total_fat),
+    serving: `${food.serving_unit} (${food.serving_weight_grams}g)`,
+  }));
+
+  const totals = {
+    calories: foods.reduce((sum, f) => sum + f.calories, 0),
+    protein: foods.reduce((sum, f) => sum + f.protein, 0),
+    carbs: foods.reduce((sum, f) => sum + f.carbs, 0),
+    fat: foods.reduce((sum, f) => sum + f.fat, 0),
+  };
+
+  return createSuccessResponse({
+    query: body.query,
+    foods,
+    totals,
+  });
+});

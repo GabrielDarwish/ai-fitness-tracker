@@ -1,161 +1,65 @@
-import { prisma } from "@/lib/db";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+/**
+ * User API Routes
+ * GET /api/user - Get current user profile
+ * POST /api/user - Update user profile (onboarding)
+ * PATCH /api/user - Partial update user profile
+ */
+
 import { NextResponse } from "next/server";
+import { userService } from "@/lib/services";
+import { getCurrentUserProfile } from "@/lib/utils/auth";
+import { asyncHandler, createSuccessResponse, ValidationError } from "@/lib/utils/errors";
+import { parseRequestBody } from "@/lib/utils/validation";
+import { UpdateUserRequest } from "@/types/api";
 import { onboardingSchema } from "@/lib/validations/onboarding";
 import { z } from "zod";
 
-export async function POST(req: Request) {
+export const GET = asyncHandler(async () => {
+  const user = await getCurrentUserProfile();
+  return createSuccessResponse({ user });
+});
+
+export const POST = asyncHandler(async (req: Request) => {
+  const { email } = await getCurrentUserProfile();
+  const data = await parseRequestBody<Record<string, unknown>>(req);
+
+  // Validate with Zod schema
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const data = await req.json();
-
-    // Validate data with Zod schema
-    let validatedData;
-    try {
-      validatedData = onboardingSchema.parse({
-        name: data.name,
-        age: Number(data.age),
-        gender: data.gender,
-        height: Number(data.height),
-        weight: Number(data.weight),
-        goals: data.goals,
-        equipment: data.equipment || [],
-      });
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        return NextResponse.json(
-          { 
-            error: "Validation failed",
-            details: validationError.issues.map((e: z.ZodIssue) => e.message).join(", ")
-          },
-          { status: 400 }
-        );
-      }
-      throw validationError;
-    }
-
-    // Update user profile with validated data
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: {
-        name: validatedData.name,
-        age: validatedData.age,
-        gender: validatedData.gender,
-        height: validatedData.height,
-        weight: validatedData.weight,
-        goals: validatedData.goals,
-        equipment: validatedData.equipment,
-      },
+    const validatedData = onboardingSchema.parse({
+      name: data.name,
+      age: Number(data.age),
+      gender: data.gender,
+      height: Number(data.height),
+      weight: Number(data.weight),
+      goals: data.goals,
+      equipment: data.equipment || [],
     });
 
-    return NextResponse.json({ success: true, user }, { status: 200 });
+    const result = await userService.updateProfile(email!, validatedData);
+    return createSuccessResponse(result);
   } catch (error) {
-    console.error("Error updating user profile:", error);
-    console.error("Error details:", JSON.stringify(error, null, 2));
-    return NextResponse.json(
-      { 
-        error: "Failed to update profile",
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PATCH(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const data = await req.json();
-
-    // Update only the provided fields
-    const updateData: any = {};
-    
-    if (data.goals !== undefined) {
-      updateData.goals = data.goals;
-    }
-    
-    if (data.equipment !== undefined) {
-      if (!Array.isArray(data.equipment)) {
-        return NextResponse.json(
-          { error: "Equipment must be an array" },
-          { status: 400 }
-        );
-      }
-      updateData.equipment = data.equipment;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: "No valid fields to update" },
-        { status: 400 }
+    if (error instanceof z.ZodError) {
+      throw new ValidationError(
+        error.issues.map((e) => e.message).join(", ")
       );
     }
-
-    const user = await prisma.user.update({
-      where: { email: session.user.email },
-      data: updateData,
-    });
-
-    return NextResponse.json({ success: true, user }, { status: 200 });
-  } catch (error) {
-    console.error("Error updating user profile:", error);
-    return NextResponse.json(
-      { 
-        error: "Failed to update profile",
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    throw error;
   }
-}
+});
 
-export async function GET(req: Request) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+export const PATCH = asyncHandler(async (req: Request) => {
+  const { email } = await getCurrentUserProfile();
+  const data = await parseRequestBody<UpdateUserRequest>(req);
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        age: true,
-        gender: true,
-        height: true,
-        weight: true,
-        goals: true,
-        equipment: true,
-        dietaryInfo: true,
-        createdAt: true,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(user, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch profile" },
-      { status: 500 }
-    );
+  // Validate equipment is array if provided
+  if (data.equipment !== undefined && !Array.isArray(data.equipment)) {
+    throw new ValidationError("Equipment must be an array");
   }
-}
 
+  if (Object.keys(data).length === 0) {
+    throw new ValidationError("No valid fields to update");
+  }
+
+  const result = await userService.updateProfile(email!, data);
+  return createSuccessResponse(result);
+});

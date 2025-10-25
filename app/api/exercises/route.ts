@@ -1,76 +1,31 @@
-import { prisma } from "@/lib/db";
+/**
+ * Exercise API Routes
+ * GET /api/exercises - Get exercises with filters
+ */
+
 import { NextResponse } from "next/server";
+import { exerciseService } from "@/lib/services";
+import { validatePagination } from "@/lib/utils/validation";
+import { asyncHandler, createSuccessResponse, createErrorResponse } from "@/lib/utils/errors";
+import { GetExercisesParams } from "@/types/api";
 
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    
-    // Extract filters from query params
-    const bodyPart = searchParams.get("bodyPart");
-    const equipment = searchParams.get("equipment");
-    const target = searchParams.get("target");
-    const search = searchParams.get("search");
-    const limit = parseInt(searchParams.get("limit") || "30");
-    const offset = parseInt(searchParams.get("offset") || "0");
+export const GET = asyncHandler(async (req: Request) => {
+  const { searchParams } = new URL(req.url);
 
-    // Build where clause for filters
-    const where: any = {};
-    
-    if (bodyPart) {
-      where.bodyPart = bodyPart;
-    }
-    
-    if (equipment) {
-      where.equipment = equipment;
-    }
-    
-    if (target) {
-      where.target = target;
-    }
-    
-    if (search) {
-      where.name = {
-        contains: search,
-        mode: "insensitive",
-      };
-    }
+  // Parse and validate parameters
+  const { limit, offset } = validatePagination(searchParams);
 
-    // Fetch exercises with filters
-    const [exercises, total] = await Promise.all([
-      prisma.exercise.findMany({
-        where,
-        select: {
-          id: true,
-          apiId: true,
-          name: true,
-          gifUrl: true,
-          bodyPart: true,
-          equipment: true,
-          target: true,
-          instructions: true,
-        },
-        orderBy: { name: "asc" },
-        take: limit,
-        skip: offset,
-      }),
-      prisma.exercise.count({ where }),
-    ]);
+  const params: GetExercisesParams = {
+    bodyPart: searchParams.get("bodyPart") || undefined,
+    equipment: searchParams.get("equipment") || undefined,
+    target: searchParams.get("target") || undefined,
+    search: searchParams.get("search") || undefined,
+    limit,
+    offset,
+  };
 
-    return NextResponse.json(
-      {
-        exercises,
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error fetching exercises:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch exercises" },
-      { status: 500 }
-    );
-  }
-}
+  // Fetch exercises using service
+  const result = await exerciseService.getExercises(params);
+
+  return createSuccessResponse(result);
+});

@@ -238,12 +238,12 @@ export class WorkoutRepository {
     ]);
 
     const totalDuration = workouts.reduce(
-      (sum, log) => sum + (log.duration || 0),
+      (sum: number, log) => sum + (log.duration || 0),
       0
     );
     const totalSets = workouts.reduce(
-      (sum, log) =>
-        sum + log.exercises.reduce((exSum, ex) => exSum + ex.sets.length, 0),
+      (sum: number, log) =>
+        sum + log.exercises.reduce((exSum: number, ex) => exSum + ex.sets.length, 0),
       0
     );
 
@@ -293,24 +293,24 @@ export class WorkoutRepository {
 
     const totalWorkouts = workouts.length;
     const totalSets = workouts.reduce(
-      (sum, log) =>
-        sum + log.exercises.reduce((exSum, ex) => exSum + ex.sets.length, 0),
+      (sum: number, log) =>
+        sum + log.exercises.reduce((exSum: number, ex) => exSum + ex.sets.length, 0),
       0
     );
 
     const totalVolume = workouts.reduce(
-      (sum, log) =>
+      (sum: number, log) =>
         sum +
         log.exercises.reduce(
-          (exSum, ex) =>
+          (exSum: number, ex) =>
             exSum +
-            ex.sets.reduce((setSum, set) => setSum + (set.weight || 0) * set.reps, 0),
+            ex.sets.reduce((setSum: number, set) => setSum + (set.weight || 0) * set.reps, 0),
           0
         ),
       0
     );
 
-    const totalDuration = workouts.reduce((sum, log) => sum + (log.duration || 0), 0);
+    const totalDuration = workouts.reduce((sum: number, log) => sum + (log.duration || 0), 0);
     const avgDuration = totalWorkouts > 0 ? Math.round(totalDuration / totalWorkouts) : 0;
 
     // Calculate body part distribution

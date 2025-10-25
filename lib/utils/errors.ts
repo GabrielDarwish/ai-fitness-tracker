@@ -4,6 +4,7 @@
  */
 
 import { NextResponse } from "next/server";
+import { ZodError, ZodIssue } from "zod";
 import { ERROR_MESSAGES } from "../constants";
 
 /**
@@ -117,10 +118,10 @@ export function createSuccessResponse<T>(
  * Async Handler Wrapper
  * Wraps async route handlers to catch errors
  */
-export function asyncHandler(
-  handler: (req: Request, context?: Record<string, unknown>) => Promise<NextResponse>
+export function asyncHandler<T = any>(
+  handler: (req: Request, context?: T) => Promise<NextResponse>
 ) {
-  return async (req: Request, context?: Record<string, unknown>) => {
+  return async (req: Request, context?: T) => {
     try {
       return await handler(req, context);
     } catch (error) {
@@ -229,13 +230,10 @@ export function handlePrismaError(error: unknown): never {
  * Convert Zod Error to ValidationError with Field Details
  */
 export function handleZodError(error: unknown): never {
-  // Dynamic import to avoid circular dependency
-  const { ZodError } = require("zod");
-  
   if (error instanceof ZodError) {
     const fields: Record<string, string> = {};
     
-    error.issues.forEach((issue) => {
+    error.issues.forEach((issue: ZodIssue) => {
       const path = issue.path.join(".");
       fields[path] = issue.message;
     });

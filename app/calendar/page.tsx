@@ -123,9 +123,9 @@ export default function CalendarPage() {
   // Calculate weekly stats
   const weeklyStats = {
     totalWorkouts: workouts.length,
-    totalSets: workouts.reduce((sum, w) => sum + w.totalSets, 0),
-    totalVolume: workouts.reduce((sum, w) => sum + w.totalVolume, 0),
-    totalMinutes: workouts.reduce((sum, w) => sum + (w.duration || 0), 0),
+    totalSets: workouts.reduce((sum: number, w) => sum + w.totalSets, 0),
+    totalVolume: workouts.reduce((sum: number, w) => sum + w.totalVolume, 0),
+    totalMinutes: workouts.reduce((sum: number, w) => sum + (w.duration || 0), 0),
   };
 
   if (status === "loading" || isLoading) {

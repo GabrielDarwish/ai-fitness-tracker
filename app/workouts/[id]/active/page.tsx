@@ -228,7 +228,7 @@ export default function ActiveWorkoutPage({
     return null;
   }
 
-  const totalSets = workoutLog.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+  const totalSets = workoutLog.exercises.reduce((sum: number, ex) => sum + ex.sets.length, 0);
   const progress = workoutLog.exercises.length > 0 
     ? Math.round((currentExerciseIdx / workoutLog.exercises.length) * 100)
     : 0;

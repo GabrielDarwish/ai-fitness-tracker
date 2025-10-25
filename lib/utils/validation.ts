@@ -21,7 +21,7 @@ export async function parseRequestBody<T>(req: Request): Promise<T> {
  * Validate Required Fields
  */
 export function validateRequiredFields(
-  data: Record<string, unknown>,
+  data: Record<string, any>,
   fields: string[]
 ): void {
   const missing = fields.filter((field) => {

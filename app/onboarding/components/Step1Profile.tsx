@@ -39,7 +39,7 @@ export default function Step1Profile({
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setErrors((prev) => ({ ...prev, [field]: error.errors[0].message }));
+        setErrors((prev) => ({ ...prev, [field]: error.issues[0].message }));
       }
     }
   };
@@ -81,7 +81,7 @@ export default function Step1Profile({
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors: ValidationErrors = {};
-        error.errors.forEach((err) => {
+        error.issues.forEach((err) => {
           const field = err.path[0] as string;
           newErrors[field as keyof ValidationErrors] = err.message;
         });

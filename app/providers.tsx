@@ -14,8 +14,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           queries: {
             // Data stays fresh for 5 minutes before refetch
             staleTime: 1000 * 60 * 5,
-            // Cache persists for 30 minutes
-            cacheTime: 1000 * 60 * 30,
+            // Garbage collection time - cache persists for 30 minutes (renamed from cacheTime in v5)
+            gcTime: 1000 * 60 * 30,
             // Retry failed requests 3 times
             retry: 3,
             // Don't refetch on every window focus (better UX)

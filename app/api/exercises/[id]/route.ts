@@ -9,9 +9,13 @@ import { getCurrentUserProfile } from "@/lib/utils/auth";
 import { asyncHandler, createSuccessResponse } from "@/lib/utils/errors";
 
 export const GET = asyncHandler(
-  async (req: Request, context: { params: { id: string } }) => {
+  async (req: Request, context?: { params: { id: string } }) => {
     const user = await getCurrentUserProfile();
-    const exerciseId = context.params.id;
+    const exerciseId = context?.params.id;
+    
+    if (!exerciseId) {
+      throw new Error("Exercise ID is required");
+    }
 
     // Get exercise details
     const exercise = await exerciseService.getExerciseById(exerciseId);

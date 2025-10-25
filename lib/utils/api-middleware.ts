@@ -6,7 +6,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { createErrorResponse } from "./errors";
+import { createErrorResponse, AppError } from "./errors";
 
 /**
  * Middleware to check if user is authenticated
